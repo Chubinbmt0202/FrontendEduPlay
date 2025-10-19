@@ -16,7 +16,7 @@ function UploadFeature() {
     // const [uploadResult, setUploadResult] = React.useState(null);
 
     // URL API Backend thực tế của bạn
-    const BACKEND_API_URL = 'http://localhost:3000/api/test';
+    const BACKEND_API_URL = 'https://musterclassyjut.onrender.com/api/test';
 
     const handleUpload = async () => {
         setUploading(true);
