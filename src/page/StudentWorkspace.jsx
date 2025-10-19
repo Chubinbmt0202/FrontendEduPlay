@@ -10,9 +10,9 @@ import {
     IdcardOutlined,
     AppstoreAddOutlined,
 } from '@ant-design/icons';
-
+import { useLessonData } from '../context/LessonDataContext';
 // Dùng chung data
-import { jsonData } from '../data';
+// import { jsonData } from '../data';
 
 // Import các component game tương tác
 import MultipleChoiceGame from '../components/studentPage/MultipleChoiceGame';
@@ -97,10 +97,12 @@ const renderInteractiveGame = (game) => {
 
 function StudentWorkspace() {
     // Quyết định dùng data nào (ở đây ta dùng data tĩnh)
-    const lessonDataToShow = jsonData;
+    // const lessonDataToShow = jsonData;
+    const { lessonData } = useLessonData();
+    console.log("Lesson Data trong StudentWorkspace:", lessonData);
 
     // Tạo tab items từ dữ liệu
-    const tabItems = lessonDataToShow.generated_games.map((game, index) => ({
+    const tabItems = lessonData.generated_games.map((game, index) => ({
         key: index.toString(),
         label: (
             <Space>
@@ -119,7 +121,7 @@ function StudentWorkspace() {
     return (
         <Layout>
             <Content>
-                <Title level={2}>{lessonDataToShow.lesson_title}</Title>
+                <Title level={2}>{lessonData.lesson_title}</Title>
                 <Tabs style={{ paddingTop: '50px' }} defaultActiveKey="0" items={tabItems} tabPosition='left' />
             </Content>
         </Layout >

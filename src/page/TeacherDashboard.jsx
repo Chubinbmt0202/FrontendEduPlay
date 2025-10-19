@@ -6,6 +6,7 @@ import '../App.css'; // Cập nhật đường dẫn
 import GameDrawer from '../components/GameDrawer'; // Cập nhật đường dẫn
 import UploadFeature from '../components/UploadFeature'; // Cập nhật đường dẫn
 import { jsonData } from "../data"; // Cập nhật đường dẫn
+import { useLessonData } from '../context/LessonDataContext';
 
 // Hàm helper cho GameDrawer
 const getItemArrayKey = (game) => {
@@ -22,13 +23,16 @@ const { Content } = Layout;
 
 // Đổi tên function App -> TeacherDashboard
 function TeacherDashboard() {
-    const [lessonData, setLessonData] = React.useState(jsonData);
+    const { lessonData, updateLessonData } = useLessonData();
+    // const [lessonData, setLessonData] = React.useState(jsonData);
 
     // State để chỉ quản lý GameDrawer
     const [isGameDrawerOpen, setIsGameDrawerOpen] = React.useState(false);
 
     // Các hàm điều khiển GameDrawer
     const showGameDrawer = () => {
+        console.log("Opening Game Drawer");
+        console.log("Lesson Data trong showGameDrawer:", lessonData);
         setIsGameDrawerOpen(true);
     }
 
@@ -38,7 +42,7 @@ function TeacherDashboard() {
 
     // --- Logic CRUD cho GameDrawer (giữ nguyên) ---
     const handleAddItem = (gameIndex, newItemData) => {
-        setLessonData((prevData) => {
+        updateLessonData((prevData) => {
             const newData = JSON.parse(JSON.stringify(prevData));
             const game = newData.generated_games[gameIndex];
             const key = getItemArrayKey(game);
@@ -50,7 +54,7 @@ function TeacherDashboard() {
     };
 
     const handleUpdateItem = (gameIndex, itemIndex, updatedItemData) => {
-        setLessonData((prevData) => {
+        updateLessonData((prevData) => {
             const newData = JSON.parse(JSON.stringify(prevData));
             const game = newData.generated_games[gameIndex];
             const key = getItemArrayKey(game);
@@ -62,7 +66,7 @@ function TeacherDashboard() {
     };
 
     const handleDeleteItem = (gameIndex, itemIndex) => {
-        setLessonData((prevData) => {
+        updateLessonData((prevData) => {
             const newData = JSON.parse(JSON.stringify(prevData));
             const game = newData.generated_games[gameIndex];
             const key = getItemArrayKey(game);
