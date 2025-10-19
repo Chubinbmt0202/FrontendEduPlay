@@ -1,0 +1,129 @@
+// src/pages/StudentWorkspace.jsx
+
+import React from 'react';
+import { Layout, Typography, Tabs, Space, Alert } from 'antd';
+import {
+    UnorderedListOutlined,
+    CheckSquareOutlined,
+    EditOutlined,
+    SwapOutlined,
+    IdcardOutlined,
+    AppstoreAddOutlined,
+} from '@ant-design/icons';
+
+// Dùng chung data
+import { jsonData } from '../data';
+
+// Import các component game tương tác
+import MultipleChoiceGame from '../components/studentPage/MultipleChoiceGame';
+import TrueFalseGame from '../components/studentPage/TrueFalseGame';
+import FillInTheBlankGame from '../components/studentPage/FillBlank';
+import MatchingGame from '../components/studentPage/MatchingGame';
+import FlashCardsGame from '../components/studentPage/FlashCardsGame';
+import SortingGame from '../components/studentPage/SortingGame';
+// (Bạn sẽ import các component game khác ở đây)
+
+const { Header, Content } = Layout;
+const { Title, Text } = Typography;
+
+// --- CÁC HÀM HELPER (Lấy từ GameDrawer) ---
+const getGameTypeName = (type) => {
+    switch (type) {
+        case 'multiple_choice_abcd':
+            return 'Bài tập Trắc nghiệm';
+        case 'true_false':
+            return 'Bài tập Đúng / Sai';
+        case 'fill_in_the_blank':
+            return 'Bài tập Điền từ';
+        case 'matching':
+            return 'Bài tập Nối';
+        case 'flashcards':
+            return 'Bài tập Thẻ ghi nhớ';
+        case 'sorting':
+            return 'Bài tập Phân loại';
+        default:
+            return type;
+    }
+};
+
+const getGameTypeIcon = (type) => {
+    switch (type) {
+        case 'multiple_choice_abcd':
+            return <UnorderedListOutlined />;
+        case 'true_false':
+            return <CheckSquareOutlined />;
+        case 'fill_in_the_blank':
+            return <EditOutlined />;
+        case 'matching':
+            return <SwapOutlined />;
+        case 'flashcards':
+            return <IdcardOutlined />;
+        case 'sorting':
+            return <AppstoreAddOutlined />;
+        default:
+            return null;
+    }
+};
+
+// --- Hàm render game TƯƠNG TÁC ---
+const renderInteractiveGame = (game) => {
+    switch (game.game_type) {
+        case 'multiple_choice_abcd':
+            return <MultipleChoiceGame gameData={game} />;
+        case 'true_false':
+            return <TrueFalseGame gameData={game} />;
+        case 'fill_in_the_blank':
+            return <FillInTheBlankGame gameData={game} />;
+        case 'matching':
+            return <MatchingGame gameData={game} />;
+        case 'flashcards':
+            return <FlashCardsGame gameData={game} />;
+        case 'sorting':
+            return <SortingGame gameData={game} />;
+
+        // (Thêm các case cho game khác ở đây)
+
+        default:
+            return (
+                <Alert
+                    message={`Bài tập dạng "${getGameTypeName(game.game_type)}" đang được phát triển.`}
+                    type="info"
+                    showIcon
+                />
+            );
+    }
+};
+
+
+function StudentWorkspace() {
+    // Quyết định dùng data nào (ở đây ta dùng data tĩnh)
+    const lessonDataToShow = jsonData;
+
+    // Tạo tab items từ dữ liệu
+    const tabItems = lessonDataToShow.generated_games.map((game, index) => ({
+        key: index.toString(),
+        label: (
+            <Space>
+                {getGameTypeIcon(game.game_type)}
+                {getGameTypeName(game.game_type)}
+            </Space>
+        ),
+        children: (
+            // Thêm padding cho nội dung tab
+            <div style={{ padding: '16px' }}>
+                {renderInteractiveGame(game)}
+            </div>
+        ),
+    }));
+
+    return (
+        <Layout>
+            <Content>
+                <Title level={2}>{lessonDataToShow.lesson_title}</Title>
+                <Tabs style={{ paddingTop: '50px' }} defaultActiveKey="0" items={tabItems} tabPosition='left' />
+            </Content>
+        </Layout >
+    );
+}
+
+export default StudentWorkspace;

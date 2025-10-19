@@ -1,68 +1,188 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
+* {
+  box-sizing: border-box;
   margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  padding: 0;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+/* src/index.css */
+
+/* Ghi đè style của Radio.Button KHI ĐƯỢC CHỌN */
+.ant-radio-button-wrapper-checked {
+  background-color: #1677ff !important;
+  /* Màu nền xanh (Antd primary) */
+  color: #ffffff !important;
+  /* Màu chữ trắng */
+  border-color: #1677ff !important;
+  /* Viền cùng màu */
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
+/* Giữ cho chữ đen khi CHƯA được chọn */
+.ant-radio-button-wrapper:not(.ant-radio-button-wrapper-checked) {
+  color: rgba(0, 0, 0, 0.88);
+  /* Màu chữ đen mặc định */
+}
+
+/* Style khi hover vào nút ĐÃ CHỌN */
+.ant-radio-button-wrapper-checked:hover {
+  background-color: #4096ff !important;
+  /* Màu xanh nhạt hơn */
+  color: #ffffff !important;
+  border-color: #4096ff !important;
+}
+
+/* Style khi hover vào nút CHƯA CHỌN (giữ style mặc định của Antd) */
+.ant-radio-button-wrapper:not(.ant-radio-button-wrapper-checked):hover {
+  color: #1677ff !important;
+  border-color: #1677ff !important;
+}
+
+/* --- CSS for Flashcard Flip Animation --- */
+
+/* Container để tạo không gian 3D */
+.flashcard-container {
+  perspective: 1000px;
+  width: 100%;
+  height: 250px;
   cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+/* Thẻ chính, nơi áp dụng transition */
+.flashcard {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Class được thêm vào để kích hoạt hiệu ứng lật */
+.flashcard.is-flipped {
+  transform: rotateY(180deg);
+}
+
+/* Style chung cho cả mặt trước và mặt sau */
+.flashcard-front,
+.flashcard-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  -webkit-backface-visibility: hidden;
+  /* Safari */
+  backface-visibility: hidden;
+  /* Ẩn mặt sau của element */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  font-size: 24px;
+  border-radius: 8px;
+  border: 1px solid #d9d9d9;
+}
+
+/* Style cho mặt trước */
+.flashcard-front {
+  background: white;
+  color: black;
+}
+
+/* Style cho mặt sau (được lật sẵn 180 độ) */
+.flashcard-back {
+  background: #f0f2f5;
+  /* Màu nền hơi khác */
+  color: #333;
+  transform: rotateY(180deg);
+}
+
+/* --- CSS cho Game Sắp Xếp (Kiểu Kéo Thả Vào Khung) --- */
+
+/* 1. Khu vực chung */
+.sorting-game-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* 2. Style cho "Khu Vực Chờ" (Item Bank) */
+.item-bank {
+  width: 100%;
+  min-height: 120px;
+  padding: 16px;
+  border: 2px dashed #d9d9d9;
+  border-radius: 8px;
+  background-color: #fafafa;
+  display: flex;
+  flex-wrap: wrap;
+  /* Cho phép các item xuống dòng */
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+}
+
+.item-bank.is-over {
+  border-color: #1677ff;
+  background-color: #e6f4ff;
+}
+
+/* 3. Style cho các "Khung Category" (Nơi thả) */
+.category-bin {
+  width: 100%;
+  min-height: 100px;
+  padding: 16px;
+  border: 2px solid #d9d9d9;
+  border-radius: 8px;
+  background-color: #ffffff;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.category-bin.is-over {
+  border-color: #1677ff;
+  background-color: #e6f4ff;
+  transform: scale(1.02);
+}
+
+/* 4. Style cho Item (Thẻ kéo) */
+.sortable-item {
+  padding: 12px 20px;
+  background: white;
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  cursor: grab;
+  font-size: 18px;
+  font-weight: 500;
+  transition: box-shadow 0.3s ease;
+  z-index: 10;
+  touch-action: none;
+  /* Tối ưu cho mobile */
+}
+
+/* Style khi item đang được kéo */
+.sortable-item.is-dragging {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  z-index: 100;
+  cursor: grabbing;
+}
+
+/* 5. Style Feedback (Sau khi kiểm tra) */
+.sortable-item.correct {
+  background-color: #f6ffed;
+  border-color: #52c41a;
+  color: #389e0d;
+}
+
+.sortable-item.incorrect {
+  background-color: #fff1f0;
+  border-color: #f5222d;
+  color: #cf1322;
+}
+
+/* Style cho khung category sau khi kiểm tra */
+.category-bin.checked {
+  background-color: #fafafa;
+  border-style: dashed;
 }
