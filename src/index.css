@@ -4,38 +4,6 @@
   padding: 0;
 }
 
-/* src/index.css */
-
-/* Ghi đè style của Radio.Button KHI ĐƯỢC CHỌN */
-.ant-radio-button-wrapper-checked {
-  background-color: #1677ff !important;
-  /* Màu nền xanh (Antd primary) */
-  color: #ffffff !important;
-  /* Màu chữ trắng */
-  border-color: #1677ff !important;
-  /* Viền cùng màu */
-}
-
-/* Giữ cho chữ đen khi CHƯA được chọn */
-.ant-radio-button-wrapper:not(.ant-radio-button-wrapper-checked) {
-  color: rgba(0, 0, 0, 0.88);
-  /* Màu chữ đen mặc định */
-}
-
-/* Style khi hover vào nút ĐÃ CHỌN */
-.ant-radio-button-wrapper-checked:hover {
-  background-color: #4096ff !important;
-  /* Màu xanh nhạt hơn */
-  color: #ffffff !important;
-  border-color: #4096ff !important;
-}
-
-/* Style khi hover vào nút CHƯA CHỌN (giữ style mặc định của Antd) */
-.ant-radio-button-wrapper:not(.ant-radio-button-wrapper-checked):hover {
-  color: #1677ff !important;
-  border-color: #1677ff !important;
-}
-
 /* --- CSS for Flashcard Flip Animation --- */
 
 /* Container để tạo không gian 3D */

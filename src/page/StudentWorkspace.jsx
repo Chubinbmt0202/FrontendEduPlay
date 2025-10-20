@@ -15,7 +15,7 @@ import { useLessonData } from '../context/LessonDataContext';
 // import { jsonData } from '../data';
 
 // Import các component game tương tác
-import MultipleChoiceGame from '../components/studentPage/MultipleChoiceGame';
+import MultipleChoiceGame from '../components/studentPage/MultipleChoiceGame/MultipleChoiceGame';
 import TrueFalseGame from '../components/studentPage/TrueFalseGame';
 import FillInTheBlankGame from '../components/studentPage/FillBlank';
 import MatchingGame from '../components/studentPage/MatchingGame';
