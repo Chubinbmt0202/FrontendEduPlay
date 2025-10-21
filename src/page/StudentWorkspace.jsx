@@ -17,10 +17,10 @@ import { useLessonData } from '../context/LessonDataContext';
 // Import các component game tương tác
 import MultipleChoiceGame from '../components/studentPage/MultipleChoiceGame/MultipleChoiceGame';
 import TrueFalseGame from '../components/studentPage/TrueFalse/TrueFalseGame';
-import FillInTheBlankGame from '../components/studentPage/FillBlank';
-import MatchingGame from '../components/studentPage/MatchingGame';
-import FlashCardsGame from '../components/studentPage/FlashCardsGame';
-import SortingGame from '../components/studentPage/SortingGame';
+import FillInTheBlankGame from '../components/studentPage/FillBlank/FillBlank';
+import MatchingGame from '../components/studentPage/Matching/MatchingGame';
+import FlashCardsGame from '../components/studentPage/FlashCard/FlashCardsGame';
+import SortingGame from '../components/studentPage/Sorting/SortingGame';
 // (Bạn sẽ import các component game khác ở đây)
 
 const { Header, Content } = Layout;

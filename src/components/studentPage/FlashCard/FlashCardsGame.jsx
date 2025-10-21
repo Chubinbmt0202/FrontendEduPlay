@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Space, Button, Typography, Card, Progress } from 'antd';
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
+import FlipSound from '../../../assets/sound/flipcard.mp3';
 
 const { Title } = Typography;
 
@@ -23,6 +24,8 @@ function FlashcardGame({ gameData }) {
 
     // Hàm chính: Lật thẻ
     const handleFlip = () => {
+        const flipAudio = new Audio(FlipSound);
+        flipAudio.play();
         setIsFlipped(!isFlipped);
     };
 
