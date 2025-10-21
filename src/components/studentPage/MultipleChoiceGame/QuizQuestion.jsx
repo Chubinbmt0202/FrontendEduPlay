@@ -3,6 +3,8 @@
 import React from 'react';
 import { Radio, Typography, Space, Row, Col } from 'antd';
 import { CheckCircleFilled, CloseCircleFilled } from '@ant-design/icons';
+import CorectSound from '../../../assets/sound/correct.mp3';
+import InCorrectSound from '../../../assets/sound/incorrect.mp3';
 
 // 1. THÊM LẠI: Import các style màu sắc từ file styles.js
 // import { selectedStyle, correctStyle, incorrectStyle, mutedStyle } from './styles';
@@ -69,6 +71,9 @@ const getButtonStyle = (
 
     if (isChecked) {
         if (isCorrectAnswer) {
+            const audio = new Audio(CorectSound);
+            audio.play();
+
             return {
                 ...baseStyle,
                 backgroundColor: '#d1f7d6',
@@ -79,6 +84,8 @@ const getButtonStyle = (
         }
 
         if (isUserSelection && result === 'incorrect') {
+            // const audio = new Audio(InCorrectSound);
+            // audio.play();
             return {
                 ...baseStyle,
                 backgroundColor: '#ffebee',
@@ -102,6 +109,8 @@ const getButtonStyle = (
     // 🔵 TRẠNG THÁI 3: ĐANG CHƠI (Chưa kiểm tra)
     if (isUserSelection && result === 'incorrect') {
         // Người dùng chọn sai (sau khi kiểm tra) -> Đỏ
+        const audio = new Audio(InCorrectSound);
+        audio.play();
         return {
             ...baseStyle,
             backgroundColor: '#ffebee',
