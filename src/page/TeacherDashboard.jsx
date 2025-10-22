@@ -82,7 +82,7 @@ function TeacherDashboard() {
         <div>
             <UploadFeature />
 
-            {/* Phần nội dung của trang Giáo viên */}
+
             <Content style={{ paddingTop: 24 }}>
                 <h1 level={4}>Thông tin bài học</h1>
                 <h1 level={2}>{jsonData.course_title}</h1>
@@ -94,7 +94,7 @@ function TeacherDashboard() {
                 </Button>
             </Content>
 
-            {/* Kết nối GameDrawer với state của riêng nó */}
+
             <GameDrawer
                 open={isGameDrawerOpen}
                 onClose={onCloseGameDrawer}
@@ -103,6 +103,8 @@ function TeacherDashboard() {
                 onUpdateItem={handleUpdateItem}
                 onDeleteItem={handleDeleteItem}
             />
+
+
         </div>
     );
 }

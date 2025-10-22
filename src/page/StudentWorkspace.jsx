@@ -21,6 +21,7 @@ import FillInTheBlankGame from '../components/studentPage/FillBlank/FillBlank';
 import MatchingGame from '../components/studentPage/Matching/MatchingGame';
 import FlashCardsGame from '../components/studentPage/FlashCard/FlashCardsGame';
 import SortingGame from '../components/studentPage/Sorting/SortingGame';
+import './StudentWorkspace.css';
 // (Bạn sẽ import các component game khác ở đây)
 
 const { Header, Content } = Layout;
@@ -122,7 +123,21 @@ function StudentWorkspace() {
         <Layout>
             <Content>
                 <Title level={2}>{lessonData.lesson_title}</Title>
-                <Tabs style={{ paddingTop: '50px' }} defaultActiveKey="0" items={tabItems} tabPosition='left' />
+                <Tabs
+                    defaultActiveKey="0"
+                    tabPosition="left"
+                    items={tabItems}
+                    style={{
+                        background: '#f5f7fa',
+                        borderRadius: '8px',
+                        padding: '24px',
+                    }}
+                    tabBarStyle={{
+                        padding: '12px',
+                        borderRight: '1px solid #130808ff',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                    }}
+                />
             </Content>
         </Layout >
     );
