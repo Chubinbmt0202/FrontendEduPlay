@@ -338,7 +338,6 @@ function GameDrawer({
                 width={'70%'}
                 onClose={onClose}
                 open={open}
-                bodyStyle={{ padding: 0 }}
                 extra={
                     <Space>
                         <Button danger>Thay thế bộ đề khác</Button>
@@ -362,7 +361,6 @@ function GameDrawer({
                 open={isModalOpen}
                 onCancel={handleModalClose}
                 footer={null} // Footer sẽ do component Form tự quản lý
-                destroyOnClose // Reset form khi đóng
                 width={800} // Tăng kích thước modal cho dễ nhập
             >
                 {/* Render form động khi modal mở */}

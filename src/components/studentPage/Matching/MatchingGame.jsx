@@ -1,5 +1,5 @@
 // src/components/studentPage/Matching/MatchingGame.jsx
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react"; // Thêm useMemo
 import {
     Button,
     Typography,
@@ -34,11 +34,33 @@ const mutedStyle = {
     opacity: 0.5,
 };
 
+// --- BỔ SUNG: Hàm xáo trộn mảng (Fisher-Yates shuffle) ---
+const shuffleArray = (array) => {
+    let currentIndex = array.length,
+        randomIndex;
+
+    // While there remain elements to shuffle.
+    while (currentIndex !== 0) {
+        // Pick a remaining element.
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+
+        // And swap it with the current element.
+        [array[currentIndex], array[randomIndex]] = [
+            array[randomIndex],
+            array[currentIndex],
+        ];
+    }
+
+    return array;
+};
+// --- KẾT THÚC BỔ SUNG ---
+
 function MatchingGame({ gameData }) {
     const [answers, setAnswers] = useState({});
     const [selectedA, setSelectedA] = useState(null);
-    const [disabledPairs, setDisabledPairs] = useState([]); // Lưu các cặp đã làm đúng
-    const [feedback, setFeedback] = useState({}); // feedback màu tạm thời
+    const [disabledPairs, setDisabledPairs] = useState([]); // Lưu các cặp đã làm đúng (theo chỉ mục gốc)
+    const [feedback, setFeedback] = useState({}); // feedback màu tạm thời (theo chỉ mục gốc)
 
     const pairs = gameData?.pairs || [];
     const totalQuestions = pairs.length;
@@ -46,29 +68,51 @@ function MatchingGame({ gameData }) {
         ((Object.keys(answers).length || 0) / (totalQuestions || 1)) * 100
     );
 
-    const handleSelectA = (index) => {
-        if (disabledPairs.includes(index)) return;
-        setSelectedA(index);
+    // --- THAY ĐỔI: Tạo danh sách xáo trộn cho cột A và B ---
+    const shuffledA = useMemo(() => {
+        if (!pairs || pairs.length === 0) return [];
+        const listA = pairs.map((p, index) => ({
+            text: p.item_a,
+            originalIndex: index, // Lưu chỉ mục gốc
+        }));
+        return shuffleArray(listA);
+    }, [pairs]); // Chỉ xáo trộn lại khi 'pairs' thay đổi
+
+    const shuffledB = useMemo(() => {
+        if (!pairs || pairs.length === 0) return [];
+        const listB = pairs.map((p, index) => ({
+            text: p.item_b,
+            originalIndex: index, // Lưu chỉ mục gốc
+        }));
+        return shuffleArray(listB);
+    }, [pairs]); // Chỉ xáo trộn lại khi 'pairs' thay đổi
+    // --- KẾT THÚC THAY ĐỔI ---
+
+    // handleSelectA giờ nhận originalIndex
+    const handleSelectA = (originalIndex) => {
+        if (disabledPairs.includes(originalIndex)) return;
+        setSelectedA(originalIndex);
     };
 
-    const handleSelectB = (index) => {
+    // handleSelectB giờ nhận originalIndex
+    const handleSelectB = (originalIndex) => {
         if (selectedA === null) return;
 
+        // So sánh dựa trên chỉ mục gốc
         const pairA = pairs[selectedA];
-        const pairB = pairs[index];
+        const pairB = pairs[originalIndex];
 
         const isCorrect = pairA.item_b === pairB.item_b;
 
-        // Hiển thị phản hồi màu
+        // Phản hồi dựa trên chỉ mục gốc
         setFeedback({
             [selectedA]: isCorrect ? "correct" : "incorrect",
-            [`b-${index}`]: isCorrect ? "correct" : "incorrect",
+            [`b-${originalIndex}`]: isCorrect ? "correct" : "incorrect",
         });
 
         if (isCorrect) {
             const correctAudio = new Audio(CorrectSound);
             correctAudio.play();
-            // Sau 1 giây làm mờ và lưu là đã hoàn thành
             setTimeout(() => {
                 setDisabledPairs((prev) => [...prev, selectedA]);
                 setFeedback({});
@@ -78,7 +122,6 @@ function MatchingGame({ gameData }) {
         } else {
             const incorrectAudio = new Audio(IncorrectSound);
             incorrectAudio.play();
-            // Nếu sai: sau 1s reset chọn lại
             setTimeout(() => {
                 setFeedback({});
                 setSelectedA(null);
@@ -91,6 +134,9 @@ function MatchingGame({ gameData }) {
         setSelectedA(null);
         setDisabledPairs([]);
         setFeedback({});
+        // Lưu ý: Việc reset này không xáo trộn lại, 
+        // người dùng sẽ chơi lại với đúng thứ tự đã xáo trộn trước đó.
+        // Đây thường là hành vi mong muốn.
     };
 
     const correctCount = disabledPairs.length;
@@ -116,7 +162,9 @@ function MatchingGame({ gameData }) {
                         Cột A
                     </Title>
                     <Space direction="vertical" style={{ width: "100%" }}>
-                        {pairs.map((p, i) => {
+                        {/* --- THAY ĐỔI: Render từ shuffledA --- */}
+                        {shuffledA.map((item) => {
+                            const i = item.originalIndex; // Lấy chỉ mục gốc
                             let style = {};
                             if (disabledPairs.includes(i)) style = mutedStyle;
                             else if (feedback[i] === "correct") style = correctStyle;
@@ -125,8 +173,8 @@ function MatchingGame({ gameData }) {
 
                             return (
                                 <Card
-                                    key={i}
-                                    onClick={() => handleSelectA(i)}
+                                    key={`a-${i}`} // Key nên là duy nhất
+                                    onClick={() => handleSelectA(i)} // Gửi chỉ mục gốc
                                     style={{
                                         cursor: "pointer",
                                         border: "1px solid #d9d9d9",
@@ -134,10 +182,11 @@ function MatchingGame({ gameData }) {
                                         ...style,
                                     }}
                                 >
-                                    <Text strong>{p.item_a}</Text>
+                                    <Text strong>{item.text}</Text> {/* Hiển thị text đã xáo trộn */}
                                 </Card>
                             );
                         })}
+                        {/* --- KẾT THÚC THAY ĐỔI --- */}
                     </Space>
                 </Col>
 
@@ -147,9 +196,14 @@ function MatchingGame({ gameData }) {
                         Cột B
                     </Title>
                     <Space direction="vertical" style={{ width: "100%" }}>
-                        {pairs.map((p, i) => {
+                        {/* --- THAY ĐỔI: Render từ shuffledB --- */}
+                        {shuffledB.map((item) => {
+                            const i = item.originalIndex; // Lấy chỉ mục gốc
+                            const itemBValue = pairs[i].item_b; // Lấy giá trị B gốc để so sánh
+
                             let style = {};
-                            if (Object.values(answers).includes(p.item_b)) style = mutedStyle;
+                            // Kiểm tra xem giá trị B này đã được nối chưa
+                            if (Object.values(answers).includes(itemBValue)) style = mutedStyle;
                             else if (feedback[`b-${i}`] === "correct")
                                 style = correctStyle;
                             else if (feedback[`b-${i}`] === "incorrect")
@@ -157,8 +211,8 @@ function MatchingGame({ gameData }) {
 
                             return (
                                 <Card
-                                    key={i}
-                                    onClick={() => handleSelectB(i)}
+                                    key={`b-${i}`} // Key nên là duy nhất
+                                    onClick={() => handleSelectB(i)} // Gửi chỉ mục gốc
                                     style={{
                                         cursor: "pointer",
                                         border: "1px solid #d9d9d9",
@@ -166,10 +220,11 @@ function MatchingGame({ gameData }) {
                                         ...style,
                                     }}
                                 >
-                                    <Text>{p.item_b}</Text>
+                                    <Text>{item.text}</Text> {/* Hiển thị text đã xáo trộn */}
                                 </Card>
                             );
                         })}
+                        {/* --- KẾT THÚC THAY ĐỔI --- */}
                     </Space>
                 </Col>
             </Row>
