@@ -1,131 +1,117 @@
 // src/components/GameEditForm.jsx
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react'; // Thêm useMemo để tối ưu (tùy chọn)
 import { Form, Input, Button, Space, Radio, Checkbox, Alert } from 'antd';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
+import { getDefaultValues } from '../utils/gameDefault'; // 1. IMPORT HÀM MẶC ĐỊNH TỪ FILE RIÊNG
 
-// Giá trị mặc định cho từng loại câu hỏi khi thêm mới
-const getDefaultValues = (gameType) => {
-    switch (gameType) {
-        case 'multiple_choice_abcd':
-            return {
-                question_text: '',
-                options: ['', '', '', ''],
-                correct_answer_index: 0,
-            };
-        case 'true_false':
-            return {
-                statement_text: '',
-                is_true: true,
-            };
-        case 'fill_in_the_blank':
-            return {
-                sentence_with_blank: '',
-                answer: '',
-            };
-        case 'matching':
-            return {
-                instruction: '',
-                pairs: [{ item_a: '', item_b: '' }],
-            };
-        case 'flashcards':
-            return {
-                deck_title: '',
-                cards: [{ front: '', back: '' }],
-            };
-        case 'sorting':
-            return {
-                instruction: '',
-                categories: [{ category_name: '', items: [] }],
-            };
-        default:
-            return {};
-    }
-};
+// 2. IMPORT CÁC COMPONENT FORM CON (ví dụ: cho Multiple Choice)
+import MultipleChoiceForm from './gameForms/MultipleChoiceForm';
+// import TrueFalseForm from './gameForms/TrueFalseForm';
+// ... import các form khác
 
-function GameEditForm({ gameType, initialData, onSave, onCancel }) {
-    const [form] = Form.useForm();
+// Component chính GameEditForm nhận các props:
+// gameType: Loại game/câu hỏi hiện tại (ví dụ: 'multiple_choice_abcd')
+// initialData: Dữ liệu hiện có của câu hỏi (dùng cho chế độ chỉnh sửa)
+// onSave: Callback khi form được submit thành công
+// onCancel: Callback khi người dùng hủy bỏ
+function GameEditForm({ gameType, initialData, onSave, onCancel, onChange }) {
+    const [form] = Form.useForm(); // Sử dụng hook useForm của Ant Design
 
+    // Xử lý logic chuẩn hóa dữ liệu và set giá trị ban đầu cho form
     useEffect(() => {
         if (initialData) {
-            form.setFieldsValue(initialData);
+            // 3. CHẾ ĐỘ CHỈNH SỬA
+            const clone = JSON.parse(JSON.stringify(initialData)); // Clone dữ liệu để tránh thay đổi trực tiếp props
+
+            // ** CHUẨN HÓA DỮ LIỆU CỤ THỂ CHO TỪNG LOẠI GAME **
+
+            if (gameType === 'multiple_choice_abcd') {
+                // Đảm bảo 'options' là mảng và có ít nhất 4 phần tử mặc định nếu rỗng
+                clone.options = Array.isArray(clone.options) && clone.options.length > 0 ? clone.options : ['', '', '', ''];
+
+                // Đảm bảo 'correct_answer_index' là số hợp lệ
+                clone.correct_answer_index = Number.isFinite(clone.correct_answer_index)
+                    ? Number(clone.correct_answer_index)
+                    : 0;
+                // Giới hạn chỉ mục trong phạm vi mảng options
+                if (clone.correct_answer_index < 0) clone.correct_answer_index = 0;
+                if (clone.correct_answer_index >= clone.options.length) clone.correct_answer_index = clone.options.length - 1;
+            }
+
+            // (Logic chuẩn hóa tương tự cho 'matching', 'flashcards', 'sorting'...)
+            if (gameType === 'matching') {
+                clone.pairs = Array.isArray(clone.pairs) && clone.pairs.length > 0 ? clone.pairs : [{ item_a: '', item_b: '' }];
+            }
+
+            if (gameType === 'flashcards') {
+                clone.cards = Array.isArray(clone.cards) && clone.cards.length > 0 ? clone.cards : [{ front: '', back: '' }];
+            }
+
+            if (gameType === 'sorting') {
+                clone.categories = Array.isArray(clone.categories) && clone.categories.length > 0
+                    // Lặp qua các category để chuẩn hóa items bên trong
+                    ? clone.categories.map(cat => ({
+                        category_name: cat.category_name || '',
+                        items: Array.isArray(cat.items) && cat.items.length ? cat.items : ['']
+                    }))
+                    : [{ category_name: '', items: [''] }]; // Mặc định nếu không có category
+            }
+
+            form.setFieldsValue(clone); // Set giá trị đã chuẩn hóa vào form
         } else {
+            // 4. CHẾ ĐỘ TẠO MỚI: Dùng giá trị mặc định
             form.setFieldsValue(getDefaultValues(gameType));
         }
-    }, [initialData, gameType, form]);
+    }, [initialData, gameType, form]); // Dependencies: Chạy lại khi data hoặc gameType thay đổi
 
+    // Xử lý khi form submit thành công
     const onFinish = (values) => {
-        // đảm bảo trả về 1 bản sao (không bắt reference ngoại)
-        // (nhiều kiểu game có cấu trúc mảng — clone để an toàn)
-        const cloned = JSON.parse(JSON.stringify(values));
-        onSave(cloned);
+        const cloned = JSON.parse(JSON.stringify(values)); // Clone giá trị đã submit
+        console.log('Form submitted with values:', cloned); // Debug: In ra console giá trị form
+
+        // ** CHUẨN HÓA DỮ LIỆU TRƯỚC KHI GỬI (dọn dẹp) **
+
+        if (gameType === 'multiple_choice_abcd') {
+            // Đảm bảo options là mảng string và chuẩn hóa index
+            cloned.options = Array.isArray(cloned.options) ? cloned.options.map(o => (o == null ? '' : o)) : ['', ''];
+            cloned.correct_answer_index = Number(cloned.correct_answer_index || 0);
+
+            // Giới hạn index lần nữa (phòng trường hợp xóa option)
+            if (cloned.correct_answer_index < 0) cloned.correct_answer_index = 0;
+            if (cloned.correct_answer_index >= cloned.options.length) cloned.correct_answer_index = cloned.options.length - 1;
+        }
+
+        if (gameType === 'matching') {
+            // Đảm bảo pairs là mảng đối tượng {item_a, item_b}
+            cloned.pairs = Array.isArray(cloned.pairs) ? cloned.pairs.map(p => ({ item_a: p?.item_a || '', item_b: p?.item_b || '' })) : [];
+        }
+
+        if (gameType === 'flashcards') {
+            // Đảm bảo cards là mảng đối tượng {front, back}
+            cloned.cards = Array.isArray(cloned.cards) ? cloned.cards.map(c => ({ front: c?.front || '', back: c?.back || '' })) : [];
+        }
+
+        if (gameType === 'sorting') {
+            // Đảm bảo categories là mảng và item bên trong cũng được chuẩn hóa
+            cloned.categories = Array.isArray(cloned.categories)
+                ? cloned.categories.map(cat => ({
+                    category_name: cat.category_name || '',
+                    items: Array.isArray(cat.items) ? cat.items.map(it => (it == null ? '' : it)) : [],
+                }))
+                : [];
+        }
+
+        onSave(cloned); // Gọi callback onSave với dữ liệu đã chuẩn hóa
     };
 
-    const renderFormFields = () => {
+    // Hàm render các trường form tùy thuộc vào loại game
+    const renderFormFields = useMemo(() => { // Dùng useMemo để tránh tạo lại hàm không cần thiết
         switch (gameType) {
+            // 5. LOẠI TRẮC NGHIỆM: Sử dụng component form con
             case 'multiple_choice_abcd':
-                return (
-                    <>
-                        <Form.Item
-                            name="question_text"
-                            label="Câu hỏi"
-                            rules={[{ required: true, message: 'Vui lòng nhập câu hỏi' }]}
-                        >
-                            <Input.TextArea rows={3} />
-                        </Form.Item>
+                return <MultipleChoiceForm form={form} />;
 
-                        <Form.List name="options">
-                            {(fields, { add, remove }) => (
-                                <>
-                                    {fields.map((field, index) => (
-                                        <Form.Item
-                                            label={`Lựa chọn ${index + 1}`}
-                                            key={field.key}
-                                            rules={[{ required: true, message: 'Vui lòng nhập lựa chọn' }]}
-                                        >
-                                            <Form.Item {...field} noStyle>
-                                                <Input style={{ width: '90%' }} />
-                                            </Form.Item>
-                                            {fields.length > 2 && (
-                                                <MinusCircleOutlined
-                                                    style={{ marginLeft: 8 }}
-                                                    onClick={() => remove(field.name)}
-                                                />
-                                            )}
-                                        </Form.Item>
-                                    ))}
-
-                                    <Form.Item>
-                                        <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
-                                            Thêm lựa chọn
-                                        </Button>
-                                    </Form.Item>
-                                </>
-                            )}
-                        </Form.List>
-
-                        <Form.Item
-                            name="correct_answer_index"
-                            label="Đáp án đúng"
-                            rules={[{ required: true, message: 'Vui lòng chọn đáp án' }]}
-                        >
-                            <Form.Item dependencies={['options']} noStyle>
-                                {({ getFieldValue }) => {
-                                    const options = getFieldValue('options') || [];
-                                    return (
-                                        <Radio.Group>
-                                            {options.map((opt, index) => (
-                                                <Radio key={index} value={index}>
-                                                    {`Lựa chọn ${index + 1}`} ({opt || 'chưa nhập'})
-                                                </Radio>
-                                            ))}
-                                        </Radio.Group>
-                                    );
-                                }}
-                            </Form.Item>
-                        </Form.Item>
-                    </>
-                );
-
+            // 6. LOẠI ĐÚNG/SAI
             case 'true_false':
                 return (
                     <>
@@ -136,29 +122,38 @@ function GameEditForm({ gameType, initialData, onSave, onCancel }) {
                         >
                             <Input.TextArea rows={3} />
                         </Form.Item>
+                        {/* Checkbox dùng valuePropName="checked" để lấy giá trị boolean */}
                         <Form.Item name="is_true" label="Giá trị" valuePropName="checked">
                             <Checkbox>Là ĐÚNG</Checkbox>
                         </Form.Item>
                     </>
                 );
 
+            // 7. LOẠI ĐIỀN VÀO CHỖ TRỐNG
             case 'fill_in_the_blank':
                 return (
                     <>
                         <Form.Item
                             name="sentence_with_blank"
-                            label="Câu (dùng ___ cho chỗ trống)"
+                            label="Câu (dùng ___ cho chỗ trống)" // Hướng dẫn người dùng
                             rules={[{ required: true, message: 'Vui lòng nhập câu' }]}
                         >
                             <Input />
                         </Form.Item>
-                        <Form.Item name="answer" label="Đáp án" rules={[{ required: true, message: 'Vui lòng nhập đáp án' }]}>
+                        <Form.Item
+                            name="answer"
+                            label="Đáp án"
+                            rules={[{ required: true, message: 'Vui lòng nhập đáp án' }]}
+                        >
                             <Input />
                         </Form.Item>
                     </>
                 );
 
+            // 8. LOẠI NỐI CẶP (MATCHING): Sử dụng Form.List lồng nhau để quản lý các cặp
             case 'matching':
+                // (Phần này được giữ lại trong file chính để minh họa cách tổ chức ban đầu, 
+                // nhưng **nên** được tách ra thành MatchingForm.jsx như ví dụ 2)
                 return (
                     <>
                         <Form.Item name="instruction" label="Hướng dẫn">
@@ -168,6 +163,7 @@ function GameEditForm({ gameType, initialData, onSave, onCancel }) {
                             {(fields, { add, remove }) => (
                                 <>
                                     {fields.map((field) => (
+                                        // Hiển thị Input cho Item A và Item B trên cùng một dòng
                                         <Space key={field.key} style={{ display: 'flex', marginBottom: 8 }} align="start">
                                             <Form.Item
                                                 {...field}
@@ -185,11 +181,13 @@ function GameEditForm({ gameType, initialData, onSave, onCancel }) {
                                             >
                                                 <Input placeholder="Item B" />
                                             </Form.Item>
+                                            {/* Nút xóa cặp, chỉ hiển thị khi có > 1 cặp */}
                                             {fields.length > 1 && <MinusCircleOutlined onClick={() => remove(field.name)} />}
                                         </Space>
                                     ))}
+                                    {/* Nút thêm cặp mới */}
                                     <Form.Item>
-                                        <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+                                        <Button type="dashed" onClick={() => add({ item_a: '', item_b: '' })} block icon={<PlusOutlined />}>
                                             Thêm cặp
                                         </Button>
                                     </Form.Item>
@@ -199,111 +197,41 @@ function GameEditForm({ gameType, initialData, onSave, onCancel }) {
                     </>
                 );
 
-            case 'flashcards':
-                return (
-                    <>
-                        <Form.Item name="deck_title" label="Tiêu đề bộ thẻ">
-                            <Input />
-                        </Form.Item>
-                        <Form.List name="cards">
-                            {(fields, { add, remove }) => (
-                                <>
-                                    {fields.map((field) => (
-                                        <div key={field.key} style={{ marginBottom: 8 }}>
-                                            <Space align="start">
-                                                <Form.Item
-                                                    {...field}
-                                                    name={[field.name, 'front']}
-                                                    fieldKey={[field.fieldKey, 'front']}
-                                                    rules={[{ required: true, message: 'Nhập mặt trước' }]}
-                                                >
-                                                    <Input placeholder="Front" />
-                                                </Form.Item>
-                                                <Form.Item
-                                                    {...field}
-                                                    name={[field.name, 'back']}
-                                                    fieldKey={[field.fieldKey, 'back']}
-                                                    rules={[{ required: true, message: 'Nhập mặt sau' }]}
-                                                >
-                                                    <Input placeholder="Back" />
-                                                </Form.Item>
-                                                {fields.length > 0 && <MinusCircleOutlined onClick={() => remove(field.name)} />}
-                                            </Space>
-                                        </div>
-                                    ))}
-                                    <Form.Item>
-                                        <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
-                                            Thêm thẻ
-                                        </Button>
-                                    </Form.Item>
-                                </>
-                            )}
-                        </Form.List>
-                    </>
-                );
+            // 9. CÁC LOẠI KHÁC (Flashcards, Sorting,...)
+            // ... (cũng nên được tách thành component con)
 
-            case 'sorting':
-                return (
-                    <>
-                        <Form.Item name="instruction" label="Hướng dẫn">
-                            <Input />
-                        </Form.Item>
-                        <Form.List name="categories">
-                            {(fields, { add, remove }) => (
-                                <>
-                                    {fields.map((field) => (
-                                        <div key={field.key} style={{ marginBottom: 8 }}>
-                                            <Space direction="vertical" style={{ width: '100%' }}>
-                                                <Form.Item
-                                                    {...field}
-                                                    name={[field.name, 'category_name']}
-                                                    fieldKey={[field.fieldKey, 'category_name']}
-                                                    rules={[{ required: true, message: 'Nhập tên category' }]}
-                                                >
-                                                    <Input placeholder="Tên category" />
-                                                </Form.Item>
-                                                <Form.List name={[field.name, 'items']}>
-                                                    {(itemFields, { add: addItem, remove: removeItem }) => (
-                                                        <>
-                                                            {itemFields.map((it) => (
-                                                                <Space key={it.key} style={{ display: 'flex', marginBottom: 8 }} align="start">
-                                                                    <Form.Item {...it} noStyle name={[it.name]} fieldKey={[it.fieldKey]}>
-                                                                        <Input placeholder="Item" />
-                                                                    </Form.Item>
-                                                                    {itemFields.length > 0 && <MinusCircleOutlined onClick={() => removeItem(it.name)} />}
-                                                                </Space>
-                                                            ))}
-                                                            <Button type="dashed" onClick={() => addItem()} icon={<PlusOutlined />}>
-                                                                Thêm item
-                                                            </Button>
-                                                        </>
-                                                    )}
-                                                </Form.List>
-                                                <Button type="link" danger onClick={() => remove(field.name)}>
-                                                    Xóa category
-                                                </Button>
-                                            </Space>
-                                        </div>
-                                    ))}
-                                    <Form.Item>
-                                        <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
-                                            Thêm category
-                                        </Button>
-                                    </Form.Item>
-                                </>
-                            )}
-                        </Form.List>
-                    </>
-                );
-
+            // Trường hợp không có form hỗ trợ
             default:
                 return <Alert message="Loại game này chưa hỗ trợ chỉnh sửa." type="warning" />;
         }
-    };
+    }, [gameType]); // Chỉ tính toán lại khi gameType thay đổi
 
+    // Giao diện chính của GameEditForm
+
+    const handleValueChange = (changedValues, allValues) => {
+        console.log('Giá trị đã thay đổi:', changedValues);
+        console.log('Tất cả giá trị hiện tại:', allValues);
+
+        // 🚀 Tùy chọn: Gọi một callback prop nếu component cha muốn biết ngay lập tức
+        if (onChange) {
+            // Có thể truyền ChangedValues hoặc AllValues tùy theo nhu cầu
+            onChange(allValues, changedValues);
+        }
+
+        // Ví dụ: Kích hoạt nút Lưu nếu form đã bị thay đổi (dùng state để quản lý)
+        // setIsDirty(true);
+    };
     return (
-        <Form form={form} layout="vertical" onFinish={onFinish}>
-            {renderFormFields()}
+        <Form
+            form={form} // Kết nối form instance
+            layout="vertical" // Bố cục form theo chiều dọc
+            onFinish={onFinish} // Xử lý submit
+            onValuesChange={handleValueChange}
+        >
+            {/* Render các trường form tương ứng với loại game */}
+            {renderFormFields}
+
+            {/* Khối nút hành động (Hủy, Lưu) */}
             <Form.Item style={{ textAlign: 'right', marginBottom: 0 }}>
                 <Space>
                     <Button onClick={onCancel}>Hủy</Button>

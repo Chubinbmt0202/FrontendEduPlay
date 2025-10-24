@@ -31,43 +31,29 @@ import {
 import GameEditForm from './GameEditForm';
 import { useLessonData } from '../context/LessonDataContext';
 
-const { Text, Paragraph } = Typography;
+const { Text, Paragraph, Title } = Typography;
 
 const getGameTypeName = (type) => {
     switch (type) {
-        case 'multiple_choice_abcd':
-            return 'Bài tập Trắc nghiệm';
-        case 'true_false':
-            return 'Bài tập Đúng / Sai';
-        case 'fill_in_the_blank':
-            return 'Bài tập Điền từ';
-        case 'matching':
-            return 'Bài tập Nối';
-        case 'flashcards':
-            return 'Bài tập Thẻ ghi nhớ';
-        case 'sorting':
-            return 'Bài tập Phân loại';
-        default:
-            return type;
+        case 'multiple_choice_abcd': return 'Bài tập Trắc nghiệm';
+        case 'true_false': return 'Bài tập Đúng / Sai';
+        case 'fill_in_the_blank': return 'Bài tập Điền từ';
+        case 'matching': return 'Bài tập Nối';
+        case 'flashcards': return 'Bài tập Thẻ ghi nhớ';
+        case 'sorting': return 'Bài tập Phân loại';
+        default: return type;
     }
 };
 
 const getGameTypeIcon = (type) => {
     switch (type) {
-        case 'multiple_choice_abcd':
-            return <UnorderedListOutlined />;
-        case 'true_false':
-            return <CheckSquareOutlined />;
-        case 'fill_in_the_blank':
-            return <EditOutlined />;
-        case 'matching':
-            return <SwapOutlined />;
-        case 'flashcards':
-            return <IdcardOutlined />;
-        case 'sorting':
-            return <AppstoreAddOutlined />;
-        default:
-            return null;
+        case 'multiple_choice_abcd': return <UnorderedListOutlined />;
+        case 'true_false': return <CheckSquareOutlined />;
+        case 'fill_in_the_blank': return <UnorderedListOutlined />;
+        case 'matching': return <SwapOutlined />;
+        case 'flashcards': return <IdcardOutlined />;
+        case 'sorting': return <AppstoreAddOutlined />;
+        default: return null;
     }
 };
 
@@ -94,7 +80,7 @@ const renderGameContent = (game, gameIndex, onEdit, onDelete) => {
             return (
                 <List
                     itemLayout="vertical"
-                    dataSource={game.questions}
+                    dataSource={game.questions || []}
                     renderItem={(q, index) => (
                         <List.Item actions={renderActions(q, index)}>
                             <List.Item.Meta title={`${index + 1}. ${q.question_text}`} />
@@ -116,7 +102,7 @@ const renderGameContent = (game, gameIndex, onEdit, onDelete) => {
         case 'true_false':
             return (
                 <List
-                    dataSource={game.statements}
+                    dataSource={game.statements || []}
                     renderItem={(s, index) => (
                         <List.Item actions={renderActions(s, index)}>
                             <Space>
@@ -131,7 +117,7 @@ const renderGameContent = (game, gameIndex, onEdit, onDelete) => {
         case 'fill_in_the_blank':
             return (
                 <List
-                    dataSource={game.sentences}
+                    dataSource={game.sentences || []}
                     renderItem={(s, index) => (
                         <List.Item actions={renderActions(s, index)}>
                             <Alert
@@ -149,7 +135,7 @@ const renderGameContent = (game, gameIndex, onEdit, onDelete) => {
                 <>
                     <Paragraph italic>{game.instruction}</Paragraph>
                     <List
-                        dataSource={game.pairs}
+                        dataSource={game.pairs || []}
                         renderItem={(p, index) => (
                             <List.Item actions={renderActions(p, index)}>
                                 <Space size="large">
@@ -170,10 +156,10 @@ const renderGameContent = (game, gameIndex, onEdit, onDelete) => {
         case 'flashcards':
             return (
                 <>
-                    <p level={5}>{game.deck_title}</p>
+                    <Title level={5}>{game.deck_title}</Title>
                     <List
                         grid={{ gutter: 16, xs: 1, sm: 2, md: 3 }}
-                        dataSource={game.cards}
+                        dataSource={game.cards || []}
                         renderItem={(card, index) => (
                             <List.Item>
                                 <Card title={card.front} actions={renderActions(card, index)}>
@@ -191,7 +177,7 @@ const renderGameContent = (game, gameIndex, onEdit, onDelete) => {
                     <Paragraph italic>{game.instruction}</Paragraph>
                     <List
                         bordered
-                        dataSource={game.categories}
+                        dataSource={game.categories || []}
                         renderItem={(cat, index) => (
                             <List.Item actions={renderActions(cat, index)}>
                                 <List.Item.Meta title={cat.category_name} />
@@ -249,13 +235,69 @@ function GameDrawer({ open, onClose, data }) {
 
     const handleModalSave = (values) => {
         if (!editingItem) return;
-        if (editingItem.itemIndex === null) {
-            addItem(editingItem.gameIndex, values);
+        const { gameIndex, itemIndex, gameType } = editingItem;
+
+        // Format dữ liệu theo gameType trước khi lưu
+        let formatted = {};
+        switch (gameType) {
+            case 'multiple_choice_abcd':
+                formatted = {
+                    question_text: values.question_text || '',
+                    options: Array.isArray(values.options) ? values.options.map(o => (o == null ? '' : o)) : [],
+                    correct_answer_index: Number.isFinite(values.correct_answer_index ? Number(values.correct_answer_index) : 0)
+                        ? Number(values.correct_answer_index)
+                        : 0,
+                };
+                // clamp index
+                if (formatted.correct_answer_index < 0) formatted.correct_answer_index = 0;
+                if (formatted.correct_answer_index >= formatted.options.length) formatted.correct_answer_index = Math.max(0, formatted.options.length - 1);
+                break;
+            case 'true_false':
+                formatted = {
+                    statement_text: values.statement_text || '',
+                    is_true: !!values.is_true,
+                };
+                break;
+            case 'fill_in_the_blank':
+                formatted = {
+                    sentence_with_blank: values.sentence_with_blank || '',
+                    answer: values.answer || '',
+                };
+                break;
+            case 'matching':
+                formatted = {
+                    instruction: values.instruction || '',
+                    pairs: Array.isArray(values.pairs) ? values.pairs.map(p => ({ item_a: p.item_a || '', item_b: p.item_b || '' })) : [],
+                };
+                break;
+            case 'flashcards':
+                formatted = {
+                    deck_title: values.deck_title || '',
+                    cards: Array.isArray(values.cards) ? values.cards.map(c => ({ front: c.front || '', back: c.back || '' })) : [],
+                };
+                break;
+            case 'sorting':
+                formatted = {
+                    instruction: values.instruction || '',
+                    categories: Array.isArray(values.categories) ? values.categories.map(cat => ({
+                        category_name: cat.category_name || '',
+                        items: Array.isArray(cat.items) ? cat.items.map(i => (i == null ? '' : i)) : [],
+                    })) : [],
+                };
+                break;
+            default:
+                formatted = values;
+                break;
+        }
+
+        if (itemIndex === null) {
+            addItem(gameIndex, formatted);
             message.success('Đã thêm mới!');
         } else {
-            updateItem(editingItem.gameIndex, editingItem.itemIndex, values);
+            updateItem(gameIndex, itemIndex, formatted);
             message.success('Đã cập nhật!');
         }
+
         handleModalClose();
     };
 
