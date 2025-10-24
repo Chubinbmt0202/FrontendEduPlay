@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 // src/components/GameEditForm.jsx
 import React, { useEffect, useMemo } from 'react'; // Thêm useMemo để tối ưu (tùy chọn)
 import { Form, Input, Button, Space, Radio, Checkbox, Alert } from 'antd';
@@ -6,6 +7,7 @@ import { getDefaultValues } from '../utils/gameDefault'; // 1. IMPORT HÀM MẶC
 
 // 2. IMPORT CÁC COMPONENT FORM CON (ví dụ: cho Multiple Choice)
 import MultipleChoiceForm from './gameForms/MultipleChoiceForm';
+import MatchingForm from './gameForms/MatchingForm';
 // import TrueFalseForm from './gameForms/TrueFalseForm';
 // ... import các form khác
 
@@ -40,7 +42,33 @@ function GameEditForm({ gameType, initialData, onSave, onCancel, onChange }) {
 
             // (Logic chuẩn hóa tương tự cho 'matching', 'flashcards', 'sorting'...)
             if (gameType === 'matching') {
-                clone.pairs = Array.isArray(clone.pairs) && clone.pairs.length > 0 ? clone.pairs : [{ item_a: '', item_b: '' }];
+
+                console.log('Initial matching data before normalization:', clone);
+
+                // ✨ 1. TRÍCH XUẤT VÀ CHUẨN HÓA CÁC CẶP (Lưu ý: Dữ liệu bị flat)
+
+                let existingPairs = Array.isArray(clone.pairs) ? clone.pairs : [];
+
+                // Nếu đối tượng clone hiện tại là một cặp đơn (như log bạn thấy), hãy thêm nó vào mảng.
+                // Điều này xử lý trường hợp dữ liệu cũ bị "làm phẳng" sai.
+                if (clone.item_a || clone.item_b) {
+                    existingPairs = [{ item_a: clone.item_a || '', item_b: clone.item_b || '' }, ...existingPairs];
+
+                    // Quan trọng: Xóa các thuộc tính cũ khỏi cấp độ gốc sau khi trích xuất
+                    delete clone.item_a;
+                    delete clone.item_b;
+                }
+
+                // 2. CHUẨN HÓA CUỐI CÙNG VÀ GÁN VÀO FORM
+                clone.pairs = existingPairs.length > 0
+                    ? existingPairs.map(p => ({ item_a: p?.item_a || '', item_b: p?.item_b || '' }))
+                    : [{ item_a: '', item_b: '' }]; // Giá trị mặc định nếu rỗng
+
+                // 3. Đảm bảo instruction là string
+                clone.instruction = clone.instruction || '';
+
+                // Bây giờ, đối tượng clone đã có cấu trúc đúng: { pairs: [...], instruction: '...' }
+                console.log('Initial matching data AFTER normalization:', clone);
             }
 
             if (gameType === 'flashcards') {
@@ -82,8 +110,16 @@ function GameEditForm({ gameType, initialData, onSave, onCancel, onChange }) {
         }
 
         if (gameType === 'matching') {
-            // Đảm bảo pairs là mảng đối tượng {item_a, item_b}
-            cloned.pairs = Array.isArray(cloned.pairs) ? cloned.pairs.map(p => ({ item_a: p?.item_a || '', item_b: p?.item_b || '' })) : [];
+            // Lọc ra các cặp có item_a hoặc item_b bị trống
+            cloned.pairs = Array.isArray(cloned.pairs)
+                ? cloned.pairs
+                    .map(p => ({ item_a: p?.item_a || '', item_b: p?.item_b || '' }))
+                    // Chỉ giữ lại các cặp có ít nhất một trường được điền
+                    .filter(p => p.item_a || p.item_b)
+                : [];
+
+            // Đảm bảo instruction là string
+            cloned.instruction = cloned.instruction || '';
         }
 
         if (gameType === 'flashcards') {
@@ -154,48 +190,7 @@ function GameEditForm({ gameType, initialData, onSave, onCancel, onChange }) {
             case 'matching':
                 // (Phần này được giữ lại trong file chính để minh họa cách tổ chức ban đầu, 
                 // nhưng **nên** được tách ra thành MatchingForm.jsx như ví dụ 2)
-                return (
-                    <>
-                        <Form.Item name="instruction" label="Hướng dẫn">
-                            <Input />
-                        </Form.Item>
-                        <Form.List name="pairs">
-                            {(fields, { add, remove }) => (
-                                <>
-                                    {fields.map((field) => (
-                                        // Hiển thị Input cho Item A và Item B trên cùng một dòng
-                                        <Space key={field.key} style={{ display: 'flex', marginBottom: 8 }} align="start">
-                                            <Form.Item
-                                                {...field}
-                                                name={[field.name, 'item_a']}
-                                                fieldKey={[field.fieldKey, 'item_a']}
-                                                rules={[{ required: true, message: 'Nhập mục A' }]}
-                                            >
-                                                <Input placeholder="Item A" />
-                                            </Form.Item>
-                                            <Form.Item
-                                                {...field}
-                                                name={[field.name, 'item_b']}
-                                                fieldKey={[field.fieldKey, 'item_b']}
-                                                rules={[{ required: true, message: 'Nhập mục B' }]}
-                                            >
-                                                <Input placeholder="Item B" />
-                                            </Form.Item>
-                                            {/* Nút xóa cặp, chỉ hiển thị khi có > 1 cặp */}
-                                            {fields.length > 1 && <MinusCircleOutlined onClick={() => remove(field.name)} />}
-                                        </Space>
-                                    ))}
-                                    {/* Nút thêm cặp mới */}
-                                    <Form.Item>
-                                        <Button type="dashed" onClick={() => add({ item_a: '', item_b: '' })} block icon={<PlusOutlined />}>
-                                            Thêm cặp
-                                        </Button>
-                                    </Form.Item>
-                                </>
-                            )}
-                        </Form.List>
-                    </>
-                );
+                return <MatchingForm form={form} />;
 
             // 9. CÁC LOẠI KHÁC (Flashcards, Sorting,...)
             // ... (cũng nên được tách thành component con)

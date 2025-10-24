@@ -1,3 +1,4 @@
+/* eslint-disable no-case-declarations */
 // src/components/GameDrawer.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -130,14 +131,39 @@ const renderGameContent = (game, gameIndex, onEdit, onDelete) => {
                 />
             );
 
-        case 'matching':
+        // ... (các import: List, Space, Card, Paragraph, Text, ArrowRightOutlined)
+
+        case 'matching': {
+            // 1. Lấy dữ liệu nguồn, có thể chứa các đối tượng game bị lồng
+            const rawData = game.pairs || [];
+
+            // 2. CHUẨN HÓA: Dùng flatMap để duyệt qua mảng và trích xuất các pairs
+            const normalizedPairs = rawData.flatMap(item => {
+                // Nếu item là một cặp hợp lệ (có item_a và item_b)
+                if (item && typeof item === 'object' && item.item_a !== undefined && item.item_b !== undefined) {
+                    return [item]; // Trả về cặp đó
+                }
+
+                // Nếu item là một đối tượng game bị lồng (có thuộc tính 'pairs')
+                if (item && typeof item === 'object' && Array.isArray(item.pairs)) {
+                    // Trích xuất các pairs từ đối tượng lồng (và lọc các cặp không hợp lệ trong đó)
+                    return item.pairs.filter(p => p && p.item_a !== undefined && p.item_b !== undefined);
+                }
+
+                // Loại bỏ các phần tử khác
+                return [];
+            });
+
+            console.log('Normalized Matching Pairs:', normalizedPairs);
+
             return (
                 <>
                     <Paragraph italic>{game.instruction}</Paragraph>
                     <List
-                        dataSource={game.pairs || []}
+                        // Sử dụng dữ liệu đã được chuẩn hóa
+                        dataSource={normalizedPairs}
                         renderItem={(p, index) => (
-                            <List.Item actions={renderActions(p, index)}>
+                            <List.Item actions={renderActions(p, index)} key={index}>
                                 <Space size="large">
                                     <Card size="small" style={{ minWidth: 100, textAlign: 'center' }}>
                                         <Text strong>{p.item_a}</Text>
@@ -152,6 +178,7 @@ const renderGameContent = (game, gameIndex, onEdit, onDelete) => {
                     />
                 </>
             );
+        } // Đóng khối case
 
         case 'flashcards':
             return (
