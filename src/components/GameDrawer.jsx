@@ -1,5 +1,4 @@
 // src/components/GameDrawer.jsx
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -9,15 +8,13 @@ import {
     Tag,
     Typography,
     Card,
-    Row,
-    Col,
-    Alert,
     Drawer,
     Tabs,
-    Button,    // Thêm
-    Modal,     // Thêm
+    Button,
+    Modal,
     Popconfirm,
-    message, // Thêm
+    message,
+    Alert,
 } from 'antd';
 import {
     UnorderedListOutlined,
@@ -28,16 +25,14 @@ import {
     AppstoreAddOutlined,
     ArrowRightOutlined,
     CheckOutlined,
-    DeleteOutlined, // Thêm
-    PlusOutlined,   // Thêm
+    DeleteOutlined,
+    PlusOutlined,
 } from '@ant-design/icons';
-
-// Import component form (file này bạn đã tạo ở bước trước)
 import GameEditForm from './GameEditForm';
+import { useLessonData } from '../context/LessonDataContext';
 
-const { Title, Text, Paragraph } = Typography;
+const { Text, Paragraph } = Typography;
 
-// --- CÁC HÀM HELPER (getGameTypeName, getGameTypeIcon) GIỮ NGUYÊN ---
 const getGameTypeName = (type) => {
     switch (type) {
         case 'multiple_choice_abcd':
@@ -76,17 +71,9 @@ const getGameTypeIcon = (type) => {
     }
 };
 
-// --- HÀM RENDER NỘI DUNG (CẬP NHẬT ĐỂ CÓ NÚT SỬA/XÓA) ---
 const renderGameContent = (game, gameIndex, onEdit, onDelete) => {
-
-    // Hàm helper render các nút Sửa/Xóa cho mỗi List.Item
     const renderActions = (itemData, itemIndex) => [
-        <Button
-            type="link"
-            key="edit"
-            icon={<EditOutlined />}
-            onClick={() => onEdit(gameIndex, itemIndex, itemData)}
-        >
+        <Button type="link" key="edit" icon={<EditOutlined />} onClick={() => onEdit(gameIndex, itemIndex, itemData)}>
             Sửa
         </Button>,
         <Popconfirm
@@ -103,7 +90,6 @@ const renderGameContent = (game, gameIndex, onEdit, onDelete) => {
     ];
 
     switch (game.game_type) {
-        // === TRẮC NGHIỆM ===
         case 'multiple_choice_abcd':
             return (
                 <List
@@ -114,12 +100,10 @@ const renderGameContent = (game, gameIndex, onEdit, onDelete) => {
                             <List.Item.Meta title={`${index + 1}. ${q.question_text}`} />
                             <Radio.Group value={q.correct_answer_index} disabled>
                                 <Space direction="vertical">
-                                    {q.options.map((opt, i) => (
+                                    {Array.isArray(q.options) && q.options.map((opt, i) => (
                                         <Radio key={i} value={i}>
                                             {opt}
-                                            {i === q.correct_answer_index && (
-                                                <CheckOutlined style={{ color: 'green', marginLeft: 8 }} />
-                                            )}
+                                            {i === q.correct_answer_index && <CheckOutlined style={{ color: 'green', marginLeft: 8 }} />}
                                         </Radio>
                                     ))}
                                 </Space>
@@ -129,7 +113,6 @@ const renderGameContent = (game, gameIndex, onEdit, onDelete) => {
                 />
             );
 
-        // === ĐÚNG / SAI ===
         case 'true_false':
             return (
                 <List
@@ -138,18 +121,13 @@ const renderGameContent = (game, gameIndex, onEdit, onDelete) => {
                         <List.Item actions={renderActions(s, index)}>
                             <Space>
                                 <Text>{`${index + 1}. ${s.statement_text}`}</Text>
-                                {s.is_true ? (
-                                    <Tag color="green">ĐÚNG</Tag>
-                                ) : (
-                                    <Tag color="red">SAI</Tag>
-                                )}
+                                {s.is_true ? <Tag color="green">ĐÚNG</Tag> : <Tag color="red">SAI</Tag>}
                             </Space>
                         </List.Item>
                     )}
                 />
             );
 
-        // === ĐIỀN TỪ ===
         case 'fill_in_the_blank':
             return (
                 <List
@@ -157,7 +135,7 @@ const renderGameContent = (game, gameIndex, onEdit, onDelete) => {
                     renderItem={(s, index) => (
                         <List.Item actions={renderActions(s, index)}>
                             <Alert
-                                message={s.sentence_with_blank.replace('___', '...')}
+                                message={s.sentence_with_blank?.replace('___', '...') || s.sentence_with_blank || ''}
                                 description={<Text strong>Đáp án: {s.answer}</Text>}
                                 type="info"
                             />
@@ -166,7 +144,6 @@ const renderGameContent = (game, gameIndex, onEdit, onDelete) => {
                 />
             );
 
-        // === NỐI ===
         case 'matching':
             return (
                 <>
@@ -190,12 +167,10 @@ const renderGameContent = (game, gameIndex, onEdit, onDelete) => {
                 </>
             );
 
-        // === FLASHCARDS ===
         case 'flashcards':
             return (
                 <>
-                    <Title level={5}>{game.deck_title}</Title>
-                    {/* Thay Row/Col bằng List để thêm action dễ dàng */}
+                    <p level={5}>{game.deck_title}</p>
                     <List
                         grid={{ gutter: 16, xs: 1, sm: 2, md: 3 }}
                         dataSource={game.cards}
@@ -210,7 +185,6 @@ const renderGameContent = (game, gameIndex, onEdit, onDelete) => {
                 </>
             );
 
-        // === PHÂN LOẠI ===
         case 'sorting':
             return (
                 <>
@@ -219,11 +193,10 @@ const renderGameContent = (game, gameIndex, onEdit, onDelete) => {
                         bordered
                         dataSource={game.categories}
                         renderItem={(cat, index) => (
-                            // Thêm action để sửa/xóa cả 1 category
                             <List.Item actions={renderActions(cat, index)}>
                                 <List.Item.Meta title={cat.category_name} />
                                 <Space wrap>
-                                    {cat.items.map((item, i) => (
+                                    {Array.isArray(cat.items) && cat.items.map((item, i) => (
                                         <Tag color="blue" key={i}>
                                             {item}
                                         </Tag>
@@ -234,27 +207,21 @@ const renderGameContent = (game, gameIndex, onEdit, onDelete) => {
                     />
                 </>
             );
+
         default:
             return <pre>{JSON.stringify(game, null, 2)}</pre>;
     }
 };
 
-// --- COMPONENT CHÍNH (ĐÃ CẬP NHẬT) ---
-function GameDrawer({
-    open,
-    onClose,
-    data,
-    onAddItem,
-    onUpdateItem,
-    onDeleteItem
-}) {
+function GameDrawer({ open, onClose, data }) {
+    const navigate = useNavigate();
+    const { addItem, updateItem, deleteItem } = useLessonData();
+
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingItem, setEditingItem] = useState(null);
-    const navigate = useNavigate();
 
     if (!data) return null;
 
-    // Mở modal để SỬA
     const handleOpenEditModal = (gameIndex, itemIndex, itemData) => {
         setEditingItem({
             gameIndex,
@@ -265,12 +232,11 @@ function GameDrawer({
         setIsModalOpen(true);
     };
 
-    // Mở modal để THÊM MỚI
     const handleOpenAddModal = (gameIndex) => {
         setEditingItem({
             gameIndex,
-            itemIndex: null, // itemIndex = null báo hiệu đây là THÊM MỚI
-            data: null, // data = null để form tạo giá trị mặc định
+            itemIndex: null,
+            data: null,
             gameType: data.generated_games[gameIndex].game_type,
         });
         setIsModalOpen(true);
@@ -281,56 +247,52 @@ function GameDrawer({
         setEditingItem(null);
     };
 
-    // Xử lý khi bấm LƯU trên modal
     const handleModalSave = (values) => {
+        if (!editingItem) return;
         if (editingItem.itemIndex === null) {
-            // THÊM MỚI
-            onAddItem(editingItem.gameIndex, values);
+            addItem(editingItem.gameIndex, values);
+            message.success('Đã thêm mới!');
         } else {
-            // CẬP NHẬT
-            onUpdateItem(editingItem.gameIndex, editingItem.itemIndex, values);
+            updateItem(editingItem.gameIndex, editingItem.itemIndex, values);
+            message.success('Đã cập nhật!');
         }
         handleModalClose();
     };
 
-
-    // Chuyển đổi mảng 'generated_games' thành 'items' cho Tabs
-    const tabItems = data.generated_games.map((game, index) => {
-        return {
-            key: index.toString(),
-            label: (
-                <Space>
-                    {getGameTypeIcon(game.game_type)}
-                    {getGameTypeName(game.game_type)}
-                </Space>
-            ),
-            children: (
-                <div style={{ padding: '0 16px' }}>
-                    {/* Truyền hàm onEdit, onDelete xuống */}
-                    {renderGameContent(game, index, handleOpenEditModal, onDeleteItem)}
-
-                    {/* Nút Thêm Mới cho mỗi tab */}
-                    <Button
-                        type="dashed"
-                        icon={<PlusOutlined />}
-                        style={{ marginTop: 16, width: '100%' }}
-                        onClick={() => handleOpenAddModal(index)}
-                    >
-                        Thêm bài tập
-                    </Button>
-                </div>
-            ),
-        };
-    });
+    const handleDeleteItem = (gameIndex, itemIndex) => {
+        deleteItem(gameIndex, itemIndex);
+        message.success('Đã xóa thành công!');
+    };
 
     const handleChangePage = () => {
         message.success('Chuyển đến trang học sinh để xuất bộ đề');
         navigate('/student');
+    };
 
-    }
+    const tabItems = data.generated_games.map((game, index) => ({
+        key: index.toString(),
+        label: (
+            <Space>
+                {getGameTypeIcon(game.game_type)}
+                {getGameTypeName(game.game_type)}
+            </Space>
+        ),
+        children: (
+            <div style={{ padding: '0 16px' }}>
+                {renderGameContent(game, index, handleOpenEditModal, handleDeleteItem)}
+                <Button
+                    type="dashed"
+                    icon={<PlusOutlined />}
+                    style={{ marginTop: 16, width: '100%' }}
+                    onClick={() => handleOpenAddModal(index)}
+                >
+                    Thêm bài tập
+                </Button>
+            </div>
+        ),
+    }));
 
     return (
-        // Dùng Fragment ( <>...</> ) để bọc Drawer và Modal
         <>
             <Drawer
                 title={<Text style={{ fontSize: 18, fontWeight: 600 }}>{data.lesson_title}</Text>}
@@ -340,30 +302,22 @@ function GameDrawer({
                 open={open}
                 extra={
                     <Space>
-                        <Button danger>Thay thế bộ đề khác</Button>
                         <Button type="primary" onClick={handleChangePage}>
                             Xuất bộ đề
                         </Button>
                     </Space>
                 }
             >
-                <Tabs
-                    defaultActiveKey="0"
-                    tabPosition="left"
-                    items={tabItems}
-                    style={{ height: '100%' }}
-                />
+                <Tabs defaultActiveKey="0" tabPosition="left" items={tabItems} style={{ height: '100%' }} />
             </Drawer>
 
-            {/* Modal để Thêm/Sửa */}
             <Modal
                 title={editingItem?.itemIndex === null ? 'Thêm bài tập mới' : 'Chỉnh sửa bài tập'}
                 open={isModalOpen}
                 onCancel={handleModalClose}
-                footer={null} // Footer sẽ do component Form tự quản lý
-                width={800} // Tăng kích thước modal cho dễ nhập
+                footer={null}
+                width={800}
             >
-                {/* Render form động khi modal mở */}
                 {editingItem && (
                     <GameEditForm
                         gameType={editingItem.gameType}

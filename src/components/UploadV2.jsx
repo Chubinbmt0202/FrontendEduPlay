@@ -1,14 +1,184 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Upload, Button, Input, Form, Spin, Result } from 'antd';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Upload, message, Button, Input, Form, Spin, Result } from 'antd';
 import { UploadOutlined, LoadingOutlined, CheckCircleOutlined, RedoOutlined } from '@ant-design/icons';
+import { useLessonData } from '../context/LessonDataContext';
+import GameDrawer from '../components/GameDrawer';
+
+// Hàm helper cho GameDrawer
+const getItemArrayKey = (game) => {
+    if (game.questions) return 'questions';
+    if (game.statements) return 'statements';
+    if (game.sentences) return 'sentences';
+    if (game.pairs) return 'pairs';
+    if (game.cards) return 'cards';
+    if (game.categories) return 'categories';
+    return null;
+};
 
 const PdfUploaderPage = () => {
     const [form] = Form.useForm();
-    // Thêm trạng thái 'result'
     const [status, setStatus] = useState('form');
     const [currentStep, setCurrentStep] = useState(0);
-    // Ref để lưu trữ ID của interval/timeout để dọn dẹp
     const intervalRef = useRef(null);
+    const BACKEND_API_URL = 'https://musterclassyjut.onrender.com/api/test';
+    const [FileList, setFileList] = useState([]);
+    const [uploading, setUploading] = useState(false);
+    const [messageApi, contextHolder] = message.useMessage();
+    const { lessonData, updateLessonData } = useLessonData();
+    const [isGameDrawerOpen, setIsGameDrawerOpen] = React.useState(false);
+
+    const showGameDrawer = () => {
+        console.log("Opening Game Drawer");
+        console.log("Lesson Data trong showGameDrawer:", lessonData);
+        setIsGameDrawerOpen(true);
+    }
+
+    const onCloseGameDrawer = () => {
+        setIsGameDrawerOpen(false);
+    };
+
+    // --- Logic CRUD cho GameDrawer (giữ nguyên) ---
+    const handleAddItem = (gameIndex, newItemData) => {
+        updateLessonData((prevData) => {
+            const newData = JSON.parse(JSON.stringify(prevData));
+            const game = newData.generated_games[gameIndex];
+            const key = getItemArrayKey(game);
+            if (key) {
+                game[key].push(newItemData);
+            }
+            return newData;
+        });
+    };
+
+    const handleUpdateItem = (gameIndex, itemIndex, updatedItemData) => {
+        updateLessonData((prevData) => {
+            const newData = JSON.parse(JSON.stringify(prevData));
+            const game = newData.generated_games[gameIndex];
+            const key = getItemArrayKey(game);
+            if (key && game[key][itemIndex]) {
+                game[key][itemIndex] = updatedItemData;
+            }
+            return newData;
+        });
+    };
+
+    const handleDeleteItem = (gameIndex, itemIndex) => {
+        updateLessonData((prevData) => {
+            const newData = JSON.parse(JSON.stringify(prevData));
+            const game = newData.generated_games[gameIndex];
+            const key = getItemArrayKey(game);
+            if (key && game[key][itemIndex]) {
+                game[key].splice(itemIndex, 1);
+            }
+            return newData;
+        });
+    };
+    // The handleUpload function provided in the prompt is placed here (or imported)
+    // and is now a self-contained function within the component scope.
+    const handleUpload = useCallback(async (value) => {
+        // --- 1. START UPLOAD PROCESS & LOADING ANIMATION ---
+        const { classTaught, numQuestions } = value;
+        setUploading(true);
+        setStatus('loading');
+        setCurrentStep(0);
+
+        // Start the loading step animation
+        let step = 0;
+        intervalRef.current = setInterval(() => {
+            step++;
+            setCurrentStep(step % loadingSteps.length);
+        }, 3000);
+
+        const formData = new FormData();
+        if (classTaught > 5) {
+            alert('Cảnh báo: Lớp học cao hơn lớp 5 có thể không được hỗ trợ đầy đủ. Mong bạn nhập lại lớp');
+        } else if (numQuestions > 10) {
+            alert('Cảnh báo: Số lượng câu hỏi quá lớn có thể gây chậm trễ trong xử lý hoặc sẽ thiếu cho bài kiểm tra.');
+        } else {
+            formData.append('classTaught', classTaught);
+            formData.append('numQuestions', numQuestions);
+            FileList.forEach((file) => {
+                formData.append('document', file, value);
+            });
+        }
+
+
+        // Add form data to the upload payload if needed by the backend
+        // Note: The backend might expect these as part of the JSON response,
+        // but if it expects them as part of the FormData, add them here.
+        // For simplicity, we'll focus on the file upload logic for now.
+
+        let uploadSuccess = false;
+        console.log("Uploading files ở frontends:", formData);
+
+        try {
+            const response = await fetch(BACKEND_API_URL, {
+                method: 'POST',
+                // Important: FormData boundary is automatically set by the browser
+                body: formData,
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            // 1. Get the raw backend response
+            const backendResponse = await response.json();
+            console.log("Raw backend response:", backendResponse);
+
+            // 2. Check if the 'result' field exists and is a string
+            if (backendResponse.result && typeof backendResponse.result === 'string') {
+
+                // 3. Clean the string: Remove ```json\n and ```
+                let jsonString = backendResponse.result;
+                jsonString = jsonString.replace(/^```json\n/, ''); // Remove prefix
+                jsonString = jsonString.replace(/\n```$/, '');    // Remove suffix
+
+                console.log("Cleaned JSON string:", jsonString);
+
+                try {
+                    // 4. Parse the CLEANED string
+                    const lessonDataPayload = JSON.parse(jsonString);
+                    console.log("Parsed Lesson Data:", lessonDataPayload);
+
+                    // 5. Call updateLessonData with the PARSED object
+                    const success = updateLessonData(lessonDataPayload);
+
+                    if (success) {
+                        messageApi.success('Tải bộ đề mới thành công!');
+                        uploadSuccess = true; // Mark as success
+
+                    } else {
+                        // This error should now only appear if the *parsed* JSON is invalid
+                        messageApi.error('Lỗi: Dữ liệu JSON không đúng định dạng sau khi phân tích.');
+                    }
+
+                } catch (parseError) {
+                    console.error("Error parsing JSON string:", parseError);
+                    messageApi.error('Lỗi khi phân tích dữ liệu JSON từ backend.');
+                }
+
+            } else {
+                console.error("Backend response is missing 'result' string:", backendResponse);
+                messageApi.error('Lỗi: Định dạng phản hồi từ backend không đúng.');
+            }
+
+        } catch (error) {
+            console.error('Error uploading files:', error);
+            messageApi.error('Upload bộ đề thất bại.');
+        } finally {
+            // --- 2. STOP LOADING ANIMATION AND SET FINAL STATUS ---
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current);
+            }
+            setUploading(false);
+            setFileList([]); // Clear file list after attempt
+
+            // Transition to 'result' state only on successful JSON update
+            setStatus(uploadSuccess ? 'result' : 'form');
+        }
+    }, [FileList, updateLessonData, messageApi]); // Dependencies for useCallback
+
 
     const loadingSteps = [
         "Chúng tôi đang đọc bài giảng của bạn 📚",
@@ -26,36 +196,25 @@ const PdfUploaderPage = () => {
         };
     }, []);
 
+    // --- NEW LOGIC: onFinish now just calls the async handleUpload ---
     const onFinish = (values) => {
         console.log('Submitted values:', values);
 
-        // 1. Chuyển sang trạng thái 'loading'
-        setStatus('loading');
-        setCurrentStep(0);
-
-        // Xóa interval cũ nếu có (quan trọng cho việc dọn dẹp)
-        if (intervalRef.current) {
-            clearInterval(intervalRef.current);
+        // Ensure files are selected before uploading
+        if (FileList.length === 0) {
+            messageApi.warning('Vui lòng chọn ít nhất một file PDF để tải lên.');
+            return;
         }
 
-        // 2. Thiết lập interval để chuyển đổi giữa các bước loading (ví dụ: mỗi 3 giây)
-        let step = 0;
-        intervalRef.current = setInterval(() => {
-            step++;
-            // Chuyển đổi thông báo tuần hoàn (tránh vượt quá mảng)
-            setCurrentStep(step % loadingSteps.length);
-        }, 3000); // Thay đổi thông báo mỗi 3 giây
+        // Start the upload process, which also handles setting 'loading' status
+        handleUpload(values);
+    };
 
-        // 3. Thiết lập setTimeout để chuyển sang trạng thái 'result' sau 30 giây
-        setTimeout(() => {
-            // Dừng interval animation
-            if (intervalRef.current) {
-                clearInterval(intervalRef.current);
-            }
-            // Chuyển sang trạng thái kết quả
-            setStatus('result');
+    // --- NEW LOGIC: Use handleClick to trigger validation and onFinish ---
+    const handleClick = () => {
+        // Manually trigger form validation. If validation passes, onFinish is called.
 
-        }, 10000); // 30 giây
+        form.submit();
     };
 
     const handleCreateNew = () => {
@@ -71,8 +230,19 @@ const PdfUploaderPage = () => {
     const uploadProps = {
         name: 'file',
         multiple: true,
-        action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
-        beforeUpload: () => false,
+        // The Antd Upload component usually sends the file to the 'action' URL, 
+        // but since we want to handle it ourselves with 'fetch', we use 
+        // 'beforeUpload: () => false' to prevent default upload and manage the file list.
+        action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76', // Placeholder URL
+        beforeUpload: () => false, // Prevent default upload
+        onRemove: (file) => {
+            setFileList((prevList) => prevList.filter((f) => f.uid !== file.uid));
+        },
+        onChange: ({ fileList }) => {
+            // Only keep files that are not yet uploaded (status 'uploading' or 'error' are ok, but here we just take the raw list)
+            setFileList(fileList.map(f => f.originFileObj || f));
+        },
+        fileList: FileList,
     };
 
     // Component/Phần hiển thị Animation Loading
@@ -99,7 +269,7 @@ const PdfUploaderPage = () => {
                     size="large"
                     className="bg-blue-500 hover:bg-blue-600 border-none px-8 h-12 mr-[10px]"
                     // Thêm logic xem thử bộ đề ở đây
-                    onClick={() => console.log('Xem thử bộ đề')}
+                    onClick={showGameDrawer}
                 >
                     Xem thử bộ đề
                 </Button>
@@ -121,11 +291,21 @@ const PdfUploaderPage = () => {
             <p className="text-4xl font-semibold text-gray-800">Kéo hoặc thả file</p>
             <p className="text-4xl font-semibold text-gray-800"> pdf tại đây</p>
             <p className="text-gray-600 mt-[10px] mb-[50px]">hoặc nhấp vào nút "Tải lên file"</p>
+            {/* The actual Antd Upload component which manages the FileList state */}
             <Upload {...uploadProps} accept=".pdf">
-                <Button icon={<UploadOutlined />} className="w-[300px] h-[60px] hover:bg-blue-600 border-none px-6 py-3 rounded-md">
+                <Button
+                    icon={<UploadOutlined />}
+                    className="w-[300px] h-[60px] bg-blue-500 text-white hover:bg-blue-600 border-none px-6 py-3 rounded-md"
+                >
                     Tải lên file
                 </Button>
             </Upload>
+            {/* Display the list of selected files */}
+            {FileList.length > 0 && (
+                <div className="mt-4 text-sm text-gray-600">
+                    Đã chọn **{FileList.length}** file.
+                </div>
+            )}
         </div>
     );
 
@@ -142,6 +322,7 @@ const PdfUploaderPage = () => {
 
     return (
         <>
+            {contextHolder} {/* Important for Ant Design message API */}
             <h1 className='font-bold text-4xl p-[30px]'>Cung cấp tài liệu của bạn</h1>
             <div className="flex justify-center items-center bg-gray-100 p-10">
                 <div className="bg-white h-[500px] rounded-lg w-full max-w-8xl flex shadow-xl/30">
@@ -155,7 +336,7 @@ const PdfUploaderPage = () => {
                         <Form
                             form={form}
                             layout="vertical"
-                            onFinish={onFinish}
+                            onFinish={onFinish} // This now calls handleUpload indirectly
                             className="space-y-4 mt-[20px]"
                         >
                             <Form.Item
@@ -165,9 +346,8 @@ const PdfUploaderPage = () => {
                             >
                                 <Input
                                     className='p-[10px]'
-                                    placeholder="Ví dụ: Lớp 10A1"
-                                    // Vô hiệu hóa input khi đang loading/result
-                                    disabled={status !== 'form'}
+                                    placeholder="Ví dụ: Lớp 2"
+                                    disabled={status !== 'form' || uploading}
                                 />
                             </Form.Item>
 
@@ -179,28 +359,37 @@ const PdfUploaderPage = () => {
                                 <Input
                                     className='p-[10px]'
                                     type="number"
-                                    placeholder="Ví dụ: 20"
+                                    placeholder="Ví dụ: 4"
                                     min={1}
-                                    // Vô hiệu hóa input khi đang loading/result
-                                    disabled={status !== 'form'}
+                                    disabled={status !== 'form' || uploading}
                                 />
                             </Form.Item>
 
                             <Form.Item>
                                 <Button
                                     type="primary"
-                                    htmlType="submit"
-                                    // Chỉ cho phép submit khi ở trạng thái 'form'
-                                    disabled={status !== 'form'}
+                                    htmlType="button" // Change to 'button' so it doesn't submit by default
+                                    onClick={handleClick} // Now triggers validation/upload
+                                    disabled={status !== 'form' || uploading || FileList.length === 0}
+                                    loading={uploading}
                                     className="w-[200px] h-[50px] mt-[20px] bg-blue-500 text-white hover:bg-blue-600 border-none px-6 py-3 rounded-md"
                                 >
-                                    {status === 'loading' ? 'Đang Xử Lý...' : 'Tạo bộ câu hỏi'}
+                                    {uploading ? 'Đang Xử Lý...' : 'Tạo bộ câu hỏi'}
                                 </Button>
                             </Form.Item>
                         </Form>
                     </div>
                 </div>
             </div>
+
+            <GameDrawer
+                open={isGameDrawerOpen}
+                onClose={onCloseGameDrawer}
+                data={lessonData}
+                onAddItem={handleAddItem}
+                onUpdateItem={handleUpdateItem}
+                onDeleteItem={handleDeleteItem}
+            />
         </>
     );
 };

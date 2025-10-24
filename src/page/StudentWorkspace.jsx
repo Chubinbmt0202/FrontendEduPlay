@@ -1,7 +1,8 @@
 // src/pages/StudentWorkspace.jsx
 
 import React from 'react';
-import { Layout, Typography, Tabs, Space, Alert } from 'antd';
+import { Layout, Typography, Tabs, Space, Alert, Button, Modal } from 'antd'; // 👈 Thêm Button
+import { useNavigate } from 'react-router-dom'; // 👈 Thêm useNavigate
 import {
     UnorderedListOutlined,
     CheckSquareOutlined,
@@ -9,6 +10,7 @@ import {
     SwapOutlined,
     IdcardOutlined,
     AppstoreAddOutlined,
+    ArrowLeftOutlined, // 👈 Thêm icon mũi tên
 } from '@ant-design/icons';
 import { useLessonData } from '../context/LessonDataContext';
 // Dùng chung data
@@ -21,7 +23,6 @@ import FillInTheBlankGame from '../components/studentPage/FillBlank/FillBlank';
 import MatchingGame from '../components/studentPage/Matching/MatchingGame';
 import FlashCardsGame from '../components/studentPage/FlashCard/FlashCardsGame';
 import SortingGame from '../components/studentPage/Sorting/SortingGame';
-import './StudentWorkspace.css';
 // (Bạn sẽ import các component game khác ở đây)
 
 const { Header, Content } = Layout;
@@ -97,9 +98,25 @@ const renderInteractiveGame = (game) => {
 
 
 function StudentWorkspace() {
-    // Quyết định dùng data nào (ở đây ta dùng data tĩnh)
-    // const lessonDataToShow = jsonData;
     const { lessonData } = useLessonData();
+    const [open, setOpen] = React.useState(false);
+
+    const showModal = () => {
+        setOpen(true);
+    }
+
+    const hideModal = () => {
+        setOpen(false);
+    }
+    // 1. Khởi tạo navigate hook
+    const navigate = useNavigate();
+
+    // 2. Hàm xử lý sự kiện quay lại
+    const handleBack = () => {
+        // Sử dụng navigate(-1) để quay lại trang trước đó trong lịch sử trình duyệt
+        navigate(-1);
+    };
+
     console.log("Lesson Data trong StudentWorkspace:", lessonData);
 
     // Tạo tab items từ dữ liệu
@@ -120,22 +137,56 @@ function StudentWorkspace() {
     }));
 
     return (
-        <Layout>
-            <Content>
-                <Title level={2}>{lessonData.lesson_title}</Title>
+        <Layout className="student-workspace-layout">
+            <Content style={{ padding: '0 24px' }}>
+                {/* 3. Container chứa Title và Back button */}
+                <div
+                    style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginBottom: '20px',
+                        padding: '16px 0',
+                    }}
+                >
+                    <Button
+                        type="default"
+                        icon={<ArrowLeftOutlined />}
+                        onClick={showModal}
+                        size="large"
+                    >
+                        Quay lại trang tạo bài
+                    </Button>
+                    <Title level={2} style={{ margin: 0 }}>
+                        {lessonData.lesson_title}
+                    </Title>
+
+                    <Modal
+                        title="Bạn có chắc chắn muốn quay lại trang tạo bài không?"
+                        open={open}
+                        onOk={handleBack}
+                        onCancel={hideModal}
+                        okText="OK"
+                        cancelText="Hủy"
+                    >
+                        <p>Quay lại trang tạo bài sẽ mất bộ đề bạn vừa tạo</p>
+                    </Modal>
+
+                </div>
+
                 <Tabs
                     defaultActiveKey="0"
                     tabPosition="left"
                     items={tabItems}
                     style={{
-                        background: '#f5f7fa',
+                        background: '#fff', // Dùng màu trắng cho nội dung chính
                         borderRadius: '8px',
-                        padding: '24px',
+                        // Bỏ padding ở đây vì đã có container bọc ngoài Content
                     }}
                     tabBarStyle={{
                         padding: '12px',
-                        borderRight: '1px solid #130808ff',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                        borderRight: '1px solid #f0f0f0', // Dùng border nhẹ hơn
+                        // boxShadow: '0 2px 8px rgba(0,0,0,0.05)', // Có thể giữ lại hoặc bỏ
                     }}
                 />
             </Content>
