@@ -2,11 +2,12 @@
 
 import React from 'react';
 import { Button, Layout } from 'antd';
-import '../App.css'; // Cập nhật đường dẫn
-import GameDrawer from '../components/GameDrawer'; // Cập nhật đường dẫn
-import UploadFeature from '../components/UploadFeature'; // Cập nhật đường dẫn
-import { jsonData } from "../data"; // Cập nhật đường dẫn
-import { useLessonData } from '../context/LessonDataContext';
+import '../../index.css'; // Cập nhật đường dẫn
+import GameDrawer from '../../components/GameDrawer'; // Cập nhật đường dẫn
+import UploadFeature from '../../components/UploadFeature'; // Cập nhật đường dẫn
+// import { jsonData } from "../../data"; // Cập nhật đường dẫn
+import { useLessonData } from '../../context/LessonDataContext';
+import PdfUploaderPage from '../../components/UploadV2';
 
 // Hàm helper cho GameDrawer
 const getItemArrayKey = (game) => {
@@ -30,11 +31,11 @@ function TeacherDashboard() {
     const [isGameDrawerOpen, setIsGameDrawerOpen] = React.useState(false);
 
     // Các hàm điều khiển GameDrawer
-    const showGameDrawer = () => {
-        console.log("Opening Game Drawer");
-        console.log("Lesson Data trong showGameDrawer:", lessonData);
-        setIsGameDrawerOpen(true);
-    }
+    // const showGameDrawer = () => {
+    //     console.log("Opening Game Drawer");
+    //     console.log("Lesson Data trong showGameDrawer:", lessonData);
+    //     setIsGameDrawerOpen(true);
+    // }
 
     const onCloseGameDrawer = () => {
         setIsGameDrawerOpen(false);
@@ -80,10 +81,11 @@ function TeacherDashboard() {
 
     return (
         <div>
-            <UploadFeature />
+            {/* <UploadFeature /> */}
+            <PdfUploaderPage />
 
 
-            <Content style={{ paddingTop: 24 }}>
+            {/* <Content style={{ paddingTop: 24 }}>
                 <h1 level={4}>Thông tin bài học</h1>
                 <h1 level={2}>{jsonData.course_title}</h1>
                 <Button
@@ -92,7 +94,7 @@ function TeacherDashboard() {
                 >
                     Xem các bài tập
                 </Button>
-            </Content>
+            </Content> */}
 
 
             <GameDrawer

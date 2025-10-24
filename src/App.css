@@ -1,3 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+
 #root {
   max-width: 1280px;
   margin: 0 auto;
@@ -6,7 +12,6 @@
 }
 
 .ant-layout {
-  background-color: white !important;
-  /* Màu nền mới của bạn */
-  font-family: 'Your-Custom-Font', sans-serif;
+  background-color: white;
+  font-family: "Roboto", sans-serif;
 }

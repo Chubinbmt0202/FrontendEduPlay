@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'; // 1. Sửa lại import, chỉ giữ cái cần thiết
 import { Button, message, Upload } from 'antd';
+import '../index.css'; // 3. Cập nhật đường dẫn CSS nếu cần
 import { UploadOutlined } from '@ant-design/icons';
 import { useLessonData } from '../context/LessonDataContext'; // 4. Import context
 
@@ -11,11 +12,6 @@ function UploadFeature() {
     const [uploading, setUploading] = useState(false);
     const [messageApi, contextHolder] = message.useMessage();
     const { updateLessonData } = useLessonData(); // 4. Sử dụng context
-    // 3. Xóa tất cả state của Drawer riêng
-    // const [isResultDrawerOpen, setIsResultDrawerOpen] = React.useState(false);
-    // const [uploadResult, setUploadResult] = React.useState(null);
-
-    // URL API Backend thực tế của bạn
     const BACKEND_API_URL = 'https://musterclassyjut.onrender.com/api/test';
 
     const handleUpload = async () => {
@@ -104,7 +100,7 @@ function UploadFeature() {
         <div style={{ paddingBottom: 24, borderBottom: '1px solid #f0f0f0' }}>
             {contextHolder}
 
-            <h1>Tải lên bộ đề mới</h1>
+            <h1 className=' text-2xl font-bold text-red-800 border-b border-red-800'>Tải lên bộ đề mới</h1>
             <Upload {...props}>
                 <Button icon={<UploadOutlined />}>Select File</Button>
             </Upload>
@@ -117,8 +113,6 @@ function UploadFeature() {
             >
                 {uploading ? 'Đang xử lý...' : 'Tải lên & Tạo bộ đề'}
             </Button>
-
-            {/* 6. Xóa <Drawer> hiển thị kết quả upload */}
         </div>
     );
 }

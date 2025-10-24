@@ -6,7 +6,7 @@ import { Layout, Menu } from 'antd';
 import './App.css';
 
 // Import các trang của bạn
-import TeacherDashboard from './page/TeacherDashboard';
+import TeacherDashboard from './page/Teacher/TeacherDashboard';
 import StudentWorkspace from './page/StudentWorkspace';
 
 const { Header } = Layout;
@@ -14,7 +14,7 @@ const { Header } = Layout;
 function App() {
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
+    <Layout>
       < Routes >
         <Route path="/teacher" element={<TeacherDashboard />} />
         <Route path="/student" element={<StudentWorkspace />} />

@@ -1,3 +1,7 @@
+/* src/index.css */
+@import "tailwindcss";
+/* Bạn không cần @tailwind base/components/utilities nữa */
+
 * {
   box-sizing: border-box;
   margin: 0;
