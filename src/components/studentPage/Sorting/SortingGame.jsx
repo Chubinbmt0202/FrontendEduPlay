@@ -62,6 +62,7 @@ function SortingGame({ gameData }) {
     const [placements, setPlacements] = useState({});
     const [results, setResults] = useState({});
     const [activeId, setActiveId] = useState(null);
+    const [categoriesToRender, setCategoriesToRender] = useState([]); // <--- ĐÃ THÊM
 
     const ITEM_BANK_ID = 'item-bank';
 
@@ -88,7 +89,8 @@ function SortingGame({ gameData }) {
         const finalCategories = normalizedCategories.length > 0 ? normalizedCategories : [];
         // --------------------------------------------------------------------------
 
-        // Sử dụng finalCategories cho các bước tiếp theo
+        // --- LƯU STATE CHO VIỆC RENDER ---
+        setCategoriesToRender(finalCategories); // <--- ĐÃ THÊM
 
         // 1. Tạo danh sách tất cả các mục (flatItems)
         const flatItems = finalCategories.flatMap(cat =>
@@ -113,6 +115,8 @@ function SortingGame({ gameData }) {
     }, [gameData]);
 
     const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor));
+
+    // ... (Các hàm findContainer, handleDragStart, handleDragEnd giữ nguyên)
 
     const findContainer = (itemId) => {
         return Object.keys(placements).find(key => placements[key].includes(itemId));
@@ -200,7 +204,7 @@ function SortingGame({ gameData }) {
             >
                 <div className="sorting-game-container">
                     <Row gutter={[16, 16]}>
-                        {gameData.categories.map(cat => (
+                        {categoriesToRender.map(cat => ( // <--- ĐÃ SỬ DỤNG categoriesToRender
                             <Col xs={24} md={8} key={cat.category_name}>
                                 <DroppableContainer id={cat.category_name} title={cat.category_name}>
                                     {renderItemsInContainer(cat.category_name)}

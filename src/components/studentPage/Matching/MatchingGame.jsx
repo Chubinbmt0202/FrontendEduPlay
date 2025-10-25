@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 // src/components/studentPage/Matching/MatchingGame.jsx
 import React, { useState, useMemo } from "react"; // Thêm useMemo
 import {
@@ -62,7 +63,41 @@ function MatchingGame({ gameData }) {
     const [disabledPairs, setDisabledPairs] = useState([]); // Lưu các cặp đã làm đúng (theo chỉ mục gốc)
     const [feedback, setFeedback] = useState({}); // feedback màu tạm thời (theo chỉ mục gốc)
 
-    const pairs = gameData?.pairs || [];
+    // const pairs = gameData?.pairs || [];
+    // Bắt đầu logic chuẩn hóa (Flattening)
+    const rawData = useMemo(() => {
+        // Nếu gameData là mảng (dạng dữ liệu cũ bị flat)
+        if (Array.isArray(gameData)) {
+            return { pairs: gameData, instruction: "Nối các cặp tương ứng" };
+        }
+        // Nếu gameData là object (dạng chuẩn mới)
+        return gameData;
+    }, [gameData]);
+
+
+    const pairs = useMemo(() => {
+        let rawPairs = Array.isArray(rawData?.pairs) ? rawData.pairs : [];
+        let finalPairs = [];
+
+        // Xử lý mảng rawPairs (có thể chứa các đối tượng bài tập bị nhúng nhầm)
+        rawPairs.forEach(item => {
+            // Trường hợp 1: Đối tượng là một bài tập khác bị nhúng (có thuộc tính 'pairs' là mảng)
+            if (item && Array.isArray(item.pairs)) {
+                // Nâng các cặp con lên (Flatten)
+                finalPairs.push(...item.pairs);
+            }
+            // Trường hợp 2: Đối tượng là một cặp hợp lệ (có item_a hoặc item_b)
+            else if (item && (item.item_a || item.item_b)) {
+                finalPairs.push(item);
+            }
+        });
+
+        // Chuẩn hóa cuối cùng: Đảm bảo item_a/item_b là string và lọc cặp rỗng
+        return finalPairs
+            .map(p => ({ item_a: p?.item_a || '', item_b: p?.item_b || '' }))
+            .filter(p => p.item_a || p.item_b); // Lọc bỏ cặp rỗng hoàn toàn
+
+    }, [rawData]);
     const totalQuestions = pairs.length;
     const progressPercent = Math.round(
         ((Object.keys(answers).length || 0) / (totalQuestions || 1)) * 100

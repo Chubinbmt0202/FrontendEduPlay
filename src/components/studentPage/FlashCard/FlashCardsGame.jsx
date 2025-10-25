@@ -1,6 +1,6 @@
 // src/components/studentPage/FlashcardGame.jsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Space, Button, Typography, Card, Progress } from 'antd';
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 import FlipSound from '../../../assets/sound/flipcard.mp3';
@@ -11,13 +11,35 @@ function FlashcardGame({ gameData }) {
     const [currentIndex, setCurrentIndex] = useState(0);
     // State mới: để biết thẻ có đang bị lật hay không
     const [isFlipped, setIsFlipped] = useState(false);
+    const finalCards = useMemo(() => {
+        let rawCards = Array.isArray(gameData?.cards) ? gameData.cards : [];
+        let cardsToRender = [];
 
+        rawCards.forEach(item => {
+            // Trường hợp 1: Đối tượng là một bài tập khác bị nhúng (có thuộc tính 'cards' là mảng)
+            if (item && Array.isArray(item.cards)) {
+                // Nâng các thẻ con lên (Flatten)
+                cardsToRender.push(...item.cards);
+            }
+            // Trường hợp 2: Đối tượng là một thẻ hợp lệ (có front hoặc back)
+            else if (item && (item.front || item.back)) {
+                cardsToRender.push(item);
+            }
+        });
+
+        // Chuẩn hóa cuối cùng: Đảm bảo front/back là string và lọc thẻ rỗng
+        return cardsToRender
+            .map(c => ({ front: c?.front || '', back: c?.back || '' }))
+            .filter(c => c.front || c.back); // Lọc bỏ thẻ rỗng hoàn toàn
+
+    }, [gameData]);
     // Thay đổi: dùng 'cards'
-    const totalCards = gameData.cards.length;
-    const currentCard = gameData.cards[currentIndex];
+    const totalCards = finalCards.length;
+    const currentCard = finalCards[currentIndex];
 
     useEffect(() => {
         // Reset state khi gameData thay đổi
+        console.log("FlashcardGame nhận gameData mới:", gameData);
         setCurrentIndex(0);
         setIsFlipped(false);
     }, [gameData]);
