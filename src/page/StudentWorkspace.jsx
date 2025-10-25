@@ -100,6 +100,7 @@ const renderInteractiveGame = (game) => {
 function StudentWorkspace() {
     const { lessonData } = useLessonData();
     const [open, setOpen] = React.useState(false);
+    console.log("Lesson Data trong StudentWorkspace:", lessonData);
 
     const showModal = () => {
         setOpen(true);

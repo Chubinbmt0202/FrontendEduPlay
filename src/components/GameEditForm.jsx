@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
 // src/components/GameEditForm.jsx
 import React, { useEffect, useMemo } from 'react'; // Thêm useMemo để tối ưu (tùy chọn)
@@ -8,6 +9,8 @@ import { getDefaultValues } from '../utils/gameDefault'; // 1. IMPORT HÀM MẶC
 // 2. IMPORT CÁC COMPONENT FORM CON (ví dụ: cho Multiple Choice)
 import MultipleChoiceForm from './gameForms/MultipleChoiceForm';
 import MatchingForm from './gameForms/MatchingForm';
+import FlashCardForm from './gameForms/FlashCard';
+import SortForm from './gameForms/SortForm';
 // import TrueFalseForm from './gameForms/TrueFalseForm';
 // ... import các form khác
 
@@ -71,18 +74,69 @@ function GameEditForm({ gameType, initialData, onSave, onCancel, onChange }) {
                 console.log('Initial matching data AFTER normalization:', clone);
             }
 
+            // ✨ LOGIC CHUẨN HÓA DỮ LIỆU CŨ CHO FLASHCARD
             if (gameType === 'flashcards') {
-                clone.cards = Array.isArray(clone.cards) && clone.cards.length > 0 ? clone.cards : [{ front: '', back: '' }];
+                let existingCards = Array.isArray(clone.cards) ? clone.cards : [];
+
+                // Xử lý dữ liệu bị 'flat' (một thẻ đơn lẻ được truyền làm initialData)
+                if (clone.front || clone.back) {
+                    existingCards = [{ front: clone.front || '', back: clone.back || '' }, ...existingCards];
+                    delete clone.front;
+                    delete clone.back;
+                }
+
+                clone.cards = existingCards.length > 0
+                    ? existingCards.map(c => ({ front: c?.front || '', back: c?.back || '' }))
+                    : [{ front: '', back: '' }];
+
+                clone.deck_title = clone.deck_title || '';
             }
 
             if (gameType === 'sorting') {
-                clone.categories = Array.isArray(clone.categories) && clone.categories.length > 0
-                    // Lặp qua các category để chuẩn hóa items bên trong
-                    ? clone.categories.map(cat => ({
+                let categoriesToNormalize = Array.isArray(clone.categories) ? clone.categories : [];
+                let finalCategories = [];
+
+                console.log('Initial sorting data before normalization:', clone);
+
+                // --- 1. XỬ LÝ DỮ LIỆU BỊ 'FLAT' CẤP 1 (Nếu initialData chỉ là 1 category) ---
+                if (clone.category_name || clone.items) {
+                    categoriesToNormalize = [{
+                        category_name: clone.category_name || '',
+                        items: Array.isArray(clone.items)
+                            ? clone.items
+                            : (clone.items ? [clone.items] : [''])
+                    }, ...categoriesToNormalize];
+
+                    delete clone.category_name;
+                    delete clone.items;
+                }
+
+                // --- 2. XỬ LÝ DỮ LIỆU BỊ NHÚNG NHẦM (Recursive Flattening) ---
+                // Duyệt qua categoriesToNormalize và loại bỏ/nâng các đối tượng bài tập nhúng nhầm
+                categoriesToNormalize.forEach(cat => {
+                    if (cat && Array.isArray(cat.categories)) {
+                        // Nếu đối tượng là một bài tập khác (có thuộc tính 'categories' là mảng),
+                        // thì hãy thêm các categories con của nó vào mảng cuối cùng.
+                        finalCategories.push(...cat.categories);
+                    } else if (cat) {
+                        // Nếu là một category hợp lệ, thêm nó vào mảng cuối cùng.
+                        finalCategories.push(cat);
+                    }
+                });
+
+
+                // --- 3. CHUẨN HÓA CUỐI CÙNG VÀ GÁN VÀO FORM ---
+                clone.categories = finalCategories.length > 0
+                    ? finalCategories.map(cat => ({
                         category_name: cat.category_name || '',
+                        // Đảm bảo items là mảng và có ít nhất 1 phần tử rỗng nếu rỗng
                         items: Array.isArray(cat.items) && cat.items.length ? cat.items : ['']
                     }))
-                    : [{ category_name: '', items: [''] }]; // Mặc định nếu không có category
+                    // Mặc định nếu không có category
+                    : [{ category_name: '', items: [''] }];
+
+                clone.instruction = clone.instruction || ''; // Chuẩn hóa instruction
+                console.log('Sorting data AFTER normalization:', clone);
             }
 
             form.setFieldsValue(clone); // Set giá trị đã chuẩn hóa vào form
@@ -123,11 +177,17 @@ function GameEditForm({ gameType, initialData, onSave, onCancel, onChange }) {
         }
 
         if (gameType === 'flashcards') {
-            // Đảm bảo cards là mảng đối tượng {front, back}
-            cloned.cards = Array.isArray(cloned.cards) ? cloned.cards.map(c => ({ front: c?.front || '', back: c?.back || '' })) : [];
+            // ✨ CHUẨN HÓA KHI LƯU: Lọc bỏ thẻ trống và đảm bảo cấu trúc
+            cloned.cards = Array.isArray(cloned.cards)
+                ? cloned.cards
+                    .map(c => ({ front: c?.front || '', back: c?.back || '' }))
+                    .filter(c => c.front || c.back) // Lọc thẻ trống
+                : [];
+            cloned.deck_title = cloned.deck_title || ''; // Flashcard dùng deck_title
         }
 
         if (gameType === 'sorting') {
+            console.log('Submitted sorting data before normalization:', cloned);
             // Đảm bảo categories là mảng và item bên trong cũng được chuẩn hóa
             cloned.categories = Array.isArray(cloned.categories)
                 ? cloned.categories.map(cat => ({
@@ -192,8 +252,11 @@ function GameEditForm({ gameType, initialData, onSave, onCancel, onChange }) {
                 // nhưng **nên** được tách ra thành MatchingForm.jsx như ví dụ 2)
                 return <MatchingForm form={form} />;
 
-            // 9. CÁC LOẠI KHÁC (Flashcards, Sorting,...)
-            // ... (cũng nên được tách thành component con)
+            case 'flashcards':
+                return <FlashCardForm form={form} />;
+
+            case 'sorting':
+                return <SortForm />;
 
             // Trường hợp không có form hỗ trợ
             default:

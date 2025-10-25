@@ -66,21 +66,50 @@ function SortingGame({ gameData }) {
     const ITEM_BANK_ID = 'item-bank';
 
     useEffect(() => {
-        const flatItems = gameData.categories.flatMap(cat =>
+        console.log("Khởi tạo SortingGame với dữ liệu:", gameData);
+
+        // --- BƯỚC CHUẨN HÓA DỮ LIỆU BỊ NHÚNG NHẦM (NESTED DATA) ---
+        let normalizedCategories = [];
+
+        if (Array.isArray(gameData.categories)) {
+            gameData.categories.forEach(item => {
+                // Kiểm tra xem đối tượng có phải là một bài tập bị nhúng (có thuộc tính 'categories' là mảng)
+                if (item && Array.isArray(item.categories)) {
+                    // Nâng các categories con lên (Flatten)
+                    normalizedCategories.push(...item.categories);
+                } else if (item && item.category_name && Array.isArray(item.items)) {
+                    // Nếu là một category hợp lệ, thêm nó vào mảng
+                    normalizedCategories.push(item);
+                }
+            });
+        }
+
+        // Nếu sau khi chuẩn hóa không có categories nào, sử dụng mảng rỗng để tránh lỗi.
+        const finalCategories = normalizedCategories.length > 0 ? normalizedCategories : [];
+        // --------------------------------------------------------------------------
+
+        // Sử dụng finalCategories cho các bước tiếp theo
+
+        // 1. Tạo danh sách tất cả các mục (flatItems)
+        const flatItems = finalCategories.flatMap(cat =>
             cat.items.map(item => ({
-                id: item,
+                id: item, // Giả sử item là duy nhất
                 content: item,
                 correctCategory: cat.category_name
             }))
         );
         setAllItems(flatItems);
 
+        // 2. Tạo vị trí ban đầu (initialPlacements)
         const initialPlacements = { [ITEM_BANK_ID]: flatItems.map(item => item.id) };
-        gameData.categories.forEach(cat => {
+
+        finalCategories.forEach(cat => {
             initialPlacements[cat.category_name] = [];
         });
+
         setPlacements(initialPlacements);
         setResults({});
+
     }, [gameData]);
 
     const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor));

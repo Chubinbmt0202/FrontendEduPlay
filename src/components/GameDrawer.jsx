@@ -131,8 +131,6 @@ const renderGameContent = (game, gameIndex, onEdit, onDelete) => {
                 />
             );
 
-        // ... (các import: List, Space, Card, Paragraph, Text, ArrowRightOutlined)
-
         case 'matching': {
             // 1. Lấy dữ liệu nguồn, có thể chứa các đối tượng game bị lồng
             const rawData = game.pairs || [];
@@ -180,15 +178,37 @@ const renderGameContent = (game, gameIndex, onEdit, onDelete) => {
             );
         } // Đóng khối case
 
-        case 'flashcards':
+        case 'flashcards': {
+            // 1. Lấy dữ liệu nguồn
+            const rawData = game.cards || [];
+
+            // 2. CHUẨN HÓA: Dùng flatMap để duyệt qua mảng và trích xuất/lọc các thẻ hợp lệ
+            const normalizedCards = rawData.flatMap(item => {
+                // Trường hợp 1: Item là một thẻ hợp lệ (cấu trúc cũ)
+                if (item && typeof item === 'object' && item.front !== undefined && item.back !== undefined) {
+                    return [item];
+                }
+
+                // Trường hợp 2: Item là một đối tượng game bị lồng (cấu trúc mới)
+                if (item && typeof item === 'object' && Array.isArray(item.cards)) {
+                    // Trích xuất các cards từ đối tượng lồng (và lọc các thẻ không hợp lệ trong đó)
+                    return item.cards.filter(c => c && c.front !== undefined && c.back !== undefined);
+                }
+
+                // Loại bỏ các phần tử khác
+                return [];
+            });
+
             return (
                 <>
-                    <Title level={5}>{game.deck_title}</Title>
+                    {/* Sử dụng deck_title nếu có */}
+                    <Title level={5}>{game.deck_title || "Bộ thẻ ghi nhớ"}</Title>
                     <List
                         grid={{ gutter: 16, xs: 1, sm: 2, md: 3 }}
-                        dataSource={game.cards || []}
+                        // ✨ SỬ DỤNG DỮ LIỆU ĐÃ CHUẨN HÓA (normalizedCards) ✨
+                        dataSource={normalizedCards}
                         renderItem={(card, index) => (
-                            <List.Item>
+                            <List.Item key={index}>
                                 <Card title={card.front} actions={renderActions(card, index)}>
                                     {card.back}
                                 </Card>
@@ -197,14 +217,32 @@ const renderGameContent = (game, gameIndex, onEdit, onDelete) => {
                     />
                 </>
             );
+        }
 
         case 'sorting':
+            const rawDataSorting = game.categories || [];
+
+            // 2. chuẩn hóa dữ liệu categories
+            const normalizedCategories = rawDataSorting.flatMap(item => {
+                // Nếu item là một category hợp lệ
+                if (item && typeof item === 'object' && item.category_name !== undefined && Array.isArray(item.items)) {
+                    return [item];
+                }
+                // Nếu item là một đối tượng game bị lồng (có thuộc tính 'categories')
+                if (item && typeof item === 'object' && Array.isArray(item.categories)) {
+                    // Trích xuất các categories từ đối tượng lồng (và lọc các category không hợp lệ trong đó)
+                    return item.categories.filter(cat => cat && cat.category_name !== undefined && Array.isArray(cat.items));
+                }
+
+                // Loại bỏ các phần tử khác
+                return [];
+            });
             return (
                 <>
                     <Paragraph italic>{game.instruction}</Paragraph>
                     <List
                         bordered
-                        dataSource={game.categories || []}
+                        dataSource={normalizedCategories || []}
                         renderItem={(cat, index) => (
                             <List.Item actions={renderActions(cat, index)}>
                                 <List.Item.Meta title={cat.category_name} />
