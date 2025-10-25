@@ -187,7 +187,7 @@ function MatchingGame({ gameData }) {
             <Alert
                 message={gameData?.instruction || "Nối các cặp tương ứng giữa hai cột"}
                 type="info"
-                style={{ marginBottom: 24 }}
+                style={{ marginBottom: 24, fontSize: '20px' }}
             />
 
             <Row gutter={24}>

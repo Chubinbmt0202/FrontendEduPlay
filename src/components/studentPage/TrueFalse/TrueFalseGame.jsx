@@ -76,7 +76,7 @@ function TrueFalseGame({ gameData }) {
             />
 
             <div style={{ width: '100%' }}>
-                <Title level={5} style={{ minHeight: 60, marginBottom: 24 }}>
+                <Title level={5} style={{ minHeight: 60, marginBottom: 24, fontWeight: '900', fontSize: '30px' }}>
                     <Space>
                         {isQuizFinished && (
                             results[currentQuestionIndex] === 'correct'

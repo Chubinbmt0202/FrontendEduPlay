@@ -84,7 +84,7 @@ function FillInTheBlankGame({ gameData }) {
             />
 
             <div style={{ width: '100%' }}>
-                <Title level={5} style={{ minHeight: 60, marginBottom: 24, fontSize: 20 }}>
+                <Title level={5} style={{ minHeight: 60, marginBottom: 24, fontSize: 20, fontWeight: '900' }}>
                     <Space align="center" style={{ flexWrap: 'wrap' }}>
                         <Text style={{ fontSize: 'inherit' }}>{questionParts[0]}</Text>
                         <Input

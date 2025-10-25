@@ -168,7 +168,7 @@ function QuizQuestion({
 
     return (
         <div style={{ width: '100%' }}>
-            <Title level={5} style={{ minHeight: 60, marginBottom: 24 }}>
+            <Title className="text-xl font-bold" level={5} style={{ minHeight: 60, marginBottom: 24, fontWeight: '900', fontSize: '30px' }}>
                 <Space>
                     {/* Hiển thị icon Đúng/Sai khi review */}
                     {isFinished && (
