@@ -5,6 +5,7 @@ import { Input, Space, Button, Typography, Alert, Card, Progress, message } from
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 import { checkAnswer, getInputStyle } from './FillInTheBlankHelpers';
 import * as styles from './FillInTheBlankStyles';
+import './FillBlank.css';
 
 const { Title, Text } = Typography;
 
@@ -74,7 +75,7 @@ function FillInTheBlankGame({ gameData }) {
     const currentResult = results[currentQuestionIndex];
 
     return (
-        <Card>
+        <Card className='card-FillBlank'>
             <Progress
                 percent={progressPercent}
                 format={() =>
@@ -84,9 +85,9 @@ function FillInTheBlankGame({ gameData }) {
             />
 
             <div style={{ width: '100%' }}>
-                <Title level={5} style={{ minHeight: 60, marginBottom: 24, fontSize: 20 }}>
-                    <Space align="center" style={{ flexWrap: 'wrap' }}>
-                        <Text style={{ fontSize: 'inherit' }}>{questionParts[0]}</Text>
+                <Title className='titleName'>
+                    <Space align="center" style={{ display: 'flex', alignItems: 'center' }}>
+                        <Text className='titleName' style={{ fontSize: 'inherit' }}>{questionParts[0]}</Text>
                         <Input
                             placeholder="Nhập đáp án"
                             value={answers[currentQuestionIndex] || ''}
@@ -105,8 +106,8 @@ function FillInTheBlankGame({ gameData }) {
                         ) : (
                             <Alert
                                 message={
-                                    <span>
-                                        Chưa đúng. Đáp án đúng là: <Text strong>{currentQuestion.answer}</Text>
+                                    <span className='text-xl'>
+                                        Chưa đúng. Đáp án đúng là: <Text className='text' strong>{currentQuestion.answer}</Text>
                                     </span>
                                 }
                                 type="error"
@@ -142,12 +143,17 @@ function FillInTheBlankGame({ gameData }) {
             </div>
 
             <Space style={{ marginTop: 24, display: 'flex', justifyContent: 'space-between' }}>
-                <Button icon={<LeftOutlined />} onClick={goToPrev} disabled={currentQuestionIndex === 0}>
+                <Button style={{ padding: '20px 30px', }} icon={<LeftOutlined />} onClick={goToPrev} disabled={currentQuestionIndex === 0}>
                     Câu trước
                 </Button>
 
                 {!isQuizFinished && (
                     <Button
+                        style={{
+                            color: '#fff',
+                            backgroundColor: '#4F994C',
+                            padding: '10px 30px',
+                        }}
                         type="primary"
                         size="large"
                         icon={
@@ -167,6 +173,11 @@ function FillInTheBlankGame({ gameData }) {
 
                 {isQuizFinished && (
                     <Button
+                        style={{
+                            color: '#fff',
+                            backgroundColor: '#4F994C',
+                            padding: '20px 30px',
+                        }}
                         type="primary"
                         icon={<RightOutlined />}
                         onClick={goToNext}

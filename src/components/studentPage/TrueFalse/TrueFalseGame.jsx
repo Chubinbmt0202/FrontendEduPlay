@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Radio, Space, Button, Typography, Alert, Card, Progress, Row, Col, message } from 'antd';
 import { CheckCircleFilled, CloseCircleFilled, LeftOutlined, RightOutlined } from '@ant-design/icons';
 import { getButtonStyle } from './TrueFalseHelpers';
+import './TrueFalseGame.css';
 
 const { Title } = Typography;
 
@@ -68,7 +69,7 @@ function TrueFalseGame({ gameData }) {
     const progressPercent = Math.round(((currentQuestionIndex + 1) / totalQuestions) * 100);
 
     return (
-        <Card>
+        <Card className='true-false-game-card'>
             <Progress
                 percent={progressPercent}
                 format={() => isQuizFinished ? `Đã hoàn thành` : `Câu ${currentQuestionIndex + 1} / ${totalQuestions}`}
@@ -76,7 +77,7 @@ function TrueFalseGame({ gameData }) {
             />
 
             <div style={{ width: '100%' }}>
-                <Title level={5} style={{ minHeight: 60, marginBottom: 24 }}>
+                <Title className='titleName' style={{ minHeight: 60, marginBottom: 24, color: '#5f5f5fff' }}>
                     <Space>
                         {isQuizFinished && (
                             results[currentQuestionIndex] === 'correct'
@@ -90,7 +91,7 @@ function TrueFalseGame({ gameData }) {
                 <Radio.Group
                     value={answers[currentQuestionIndex]}
                     onChange={(e) => handleAnswerChange(e.target.value)}
-                    style={{ width: '100%' }}
+                    style={{ width: '100%', fontWeight: 500, fontSize: 25 }}
                     disabled={currentAnswerChecked || isQuizFinished}
                 >
                     <Row gutter={[16, 16]}>
@@ -137,6 +138,10 @@ function TrueFalseGame({ gameData }) {
 
                 {!isQuizFinished && (
                     <Button
+                        style={{
+                            color: '#fff',
+                            backgroundColor: '#4F994C'
+                        }}
                         type="primary"
                         size="large"
                         icon={currentAnswerChecked && currentQuestionIndex < totalQuestions - 1 ? <RightOutlined /> : null}

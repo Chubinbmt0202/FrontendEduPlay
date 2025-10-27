@@ -14,7 +14,11 @@ export const getButtonStyle = ({
     results
 }) => {
     const baseStyle = {
-        width: '100%', fontSize: 16, minHeight: '70px',
+        fontFamily: 'Lexend, sans-serif',
+        width: '100%',
+        fontSize: 25,
+        padding: 50,
+        minHeight: '70px',
         height: 'auto', display: 'flex', alignItems: 'center',
         justifyContent: 'center', whiteSpace: 'normal', lineHeight: '1.4'
     };

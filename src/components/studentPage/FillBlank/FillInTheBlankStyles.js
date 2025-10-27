@@ -2,6 +2,7 @@
 
 export const inputBaseStyle = {
     width: 200,
+    height: 60,
     textAlign: 'center',
     fontSize: 18,
 };

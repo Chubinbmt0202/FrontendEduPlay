@@ -25,9 +25,8 @@
 }
 
 .titleLessonContainer {
-    display: flex;
-    align-items: center;
-    margin-left: 8rem;
+    position: absolute;
+    left: 19rem;
 }
 
 .titleLesson {

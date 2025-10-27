@@ -14,6 +14,7 @@ import {
 } from '@dnd-kit/core';
 import CorrectSound from '../../../assets/sound/correct.mp3';
 import IncorrectSound from '../../../assets/sound/incorrect.mp3';
+import './SortingGame.css';
 
 const { Title } = Typography;
 
@@ -193,7 +194,7 @@ function SortingGame({ gameData }) {
     };
 
     return (
-        <Card>
+        <Card className='SortingCard'>
             <Alert message={gameData.instruction || "Kéo các thẻ vào nhóm đúng"} type="info" style={{ marginBottom: 24 }} />
 
             <DndContext

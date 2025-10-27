@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Space, Button, Typography, Card, Progress } from 'antd';
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 import FlipSound from '../../../assets/sound/flipcard.mp3';
+import './FlashCardsGame.css';
 
 const { Title } = Typography;
 
@@ -69,7 +70,7 @@ function FlashcardGame({ gameData }) {
     const progressPercent = Math.round(((currentIndex + 1) / totalCards) * 100);
 
     return (
-        <Card>
+        <Card className='FlashCard'>
             {/* 1. Thanh Tiến Trình */}
             <Progress
                 percent={progressPercent}
@@ -78,7 +79,7 @@ function FlashcardGame({ gameData }) {
             />
 
             {/* 2. Thẻ Flashcard */}
-            <Title level={5} style={{ marginBottom: 16, textAlign: 'center' }}>
+            <Title style={{ marginBottom: 16, textAlign: 'center', fontFamily: 'Lexend, sans-serif', fontWeight: '700', color: '#5c5c5cff' }}>
                 {gameData.deck_title} - Nhấp vào thẻ để lật
             </Title>
             <div className="flashcard-container" onClick={handleFlip}>
@@ -95,6 +96,9 @@ function FlashcardGame({ gameData }) {
             {/* 3. Thanh Điều Hướng */}
             <Space style={{ marginTop: 24, display: 'flex', justifyContent: 'space-between' }}>
                 <Button
+                    style={{
+                        padding: '20px 30px',
+                    }}
                     icon={<LeftOutlined />}
                     onClick={goToPrev}
                     disabled={currentIndex === 0}
@@ -103,6 +107,11 @@ function FlashcardGame({ gameData }) {
                 </Button>
 
                 <Button
+                    style={{
+                        color: '#fff',
+                        backgroundColor: '#4F994C',
+                        padding: '20px 30px',
+                    }}
                     type="primary"
                     icon={<RightOutlined />}
                     onClick={goToNext}
