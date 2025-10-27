@@ -85,9 +85,9 @@ function FillInTheBlankGame({ gameData }) {
             />
 
             <div style={{ width: '100%' }}>
-                <Title className='titleName'>
-                    <Space align="center" style={{ display: 'flex', alignItems: 'center' }}>
-                        <Text className='titleName' style={{ fontSize: 'inherit' }}>{questionParts[0]}</Text>
+                <Title level={5} style={{ minHeight: 60, marginBottom: 24, fontSize: 20, fontWeight: '900' }}>
+                    <Space align="center" style={{ flexWrap: 'wrap' }}>
+                        <Text style={{ fontSize: 'inherit' }}>{questionParts[0]}</Text>
                         <Input
                             placeholder="Nhập đáp án"
                             value={answers[currentQuestionIndex] || ''}
