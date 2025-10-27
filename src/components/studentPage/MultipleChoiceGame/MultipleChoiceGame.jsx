@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Alert, Card, Progress } from 'antd';
 import QuizQuestion from './QuizQuestion';
 import QuizNavigation from './QuizNavigation';
+import './MultipleChoiceGame.css';
 
 function MultipleChoiceGame({ gameData }) {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -84,7 +85,7 @@ function MultipleChoiceGame({ gameData }) {
     const isAnswerSelected = answers[currentQuestionIndex] !== undefined;
 
     return (
-        <Card>
+        <Card className="multiple-choice-game-card">
             {/* 1. Thanh Tiến Trình */}
             <Progress
                 percent={progressPercent}

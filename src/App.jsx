@@ -9,7 +9,7 @@ import ReactGA from 'react-ga4';
 
 // Import các trang của bạn
 import TeacherDashboard from './page/Teacher/TeacherDashboard';
-import StudentWorkspace from './page/StudentWorkspace';
+import StudentWorkspace from './page/Student/StudentWorkspace';
 
 const TRACKING_ID = "G-BYBSLN2K1M"; // Thay thế bằng Mã GA4 của bạn
 ReactGA.initialize(TRACKING_ID);

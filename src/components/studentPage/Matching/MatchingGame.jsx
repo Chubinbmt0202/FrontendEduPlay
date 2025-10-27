@@ -13,6 +13,7 @@ import {
 } from "antd";
 import CorrectSound from '../../../assets/sound/correct.mp3';
 import IncorrectSound from '../../../assets/sound/incorrect.mp3';
+import './MatchingGame.css';
 
 const { Title, Text } = Typography;
 
@@ -164,20 +165,10 @@ function MatchingGame({ gameData }) {
         }
     };
 
-    const resetGame = () => {
-        setAnswers({});
-        setSelectedA(null);
-        setDisabledPairs([]);
-        setFeedback({});
-        // Lưu ý: Việc reset này không xáo trộn lại, 
-        // người dùng sẽ chơi lại với đúng thứ tự đã xáo trộn trước đó.
-        // Đây thường là hành vi mong muốn.
-    };
-
     const correctCount = disabledPairs.length;
 
     return (
-        <Card>
+        <Card className="card-matching-game">
             <Progress
                 percent={progressPercent}
                 format={() => `${correctCount}/${totalQuestions}`}
@@ -187,13 +178,33 @@ function MatchingGame({ gameData }) {
             <Alert
                 message={gameData?.instruction || "Nối các cặp tương ứng giữa hai cột"}
                 type="info"
-                style={{ marginBottom: 24, fontSize: '20px' }}
+                style={{
+                    marginBottom: 24,
+                    textAlign: 'center',
+                    fontSize: '20px',
+                    fontWeight: '900',
+                    color: '#797878ff',
+                    fontFamily: 'Lexend, sans-serif !important'
+                }}
             />
 
-            <Row gutter={24}>
+            <Row style={
+                {
+                    overflowY: 'auto',
+                    maxHeight: '350px'
+                }
+            }
+
+                gutter={24}>
                 {/* Cột A */}
                 <Col xs={12}>
-                    <Title level={5} style={{ textAlign: "center" }}>
+                    <Title style={{
+                        fontSize: '25px',
+                        fontWeight: '900',
+                        textAlign: "center",
+                        fontFamily: 'Lexend, sans-serif !important',
+                        color: '#525252ff'
+                    }}>
                         Cột A
                     </Title>
                     <Space direction="vertical" style={{ width: "100%" }}>
@@ -217,7 +228,14 @@ function MatchingGame({ gameData }) {
                                         ...style,
                                     }}
                                 >
-                                    <Text strong>{item.text}</Text> {/* Hiển thị text đã xáo trộn */}
+                                    <Text style={
+                                        {
+                                            fontWeight: '700',
+                                            fontSize: '30px',
+                                            fontFamily: 'Lexend, sans-serif !important',
+                                            color: '#3c3c3cff'
+                                        }
+                                    }>{item.text}</Text> {/* Hiển thị text đã xáo trộn */}
                                 </Card>
                             );
                         })}
@@ -227,7 +245,13 @@ function MatchingGame({ gameData }) {
 
                 {/* Cột B */}
                 <Col xs={12}>
-                    <Title level={5} style={{ textAlign: "center" }}>
+                    <Title style={{
+                        fontSize: '25px',
+                        fontWeight: '900',
+                        textAlign: "center",
+                        fontFamily: 'Lexend, sans-serif !important',
+                        color: '#525252ff'
+                    }}>
                         Cột B
                     </Title>
                     <Space direction="vertical" style={{ width: "100%" }}>
@@ -252,10 +276,18 @@ function MatchingGame({ gameData }) {
                                         cursor: "pointer",
                                         border: "1px solid #d9d9d9",
                                         transition: "all 0.3s",
+                                        color: '#3c3c3cff',
                                         ...style,
                                     }}
                                 >
-                                    <Text>{item.text}</Text> {/* Hiển thị text đã xáo trộn */}
+                                    <Text style={
+                                        {
+                                            fontWeight: '700',
+                                            fontSize: '30px',
+                                            fontFamily: 'Lexend, sans-serif !important',
+                                            color: '#3c3c3cff'
+                                        }
+                                    }>{item.text}</Text> {/* Hiển thị text đã xáo trộn */}
                                 </Card>
                             );
                         })}
@@ -273,9 +305,6 @@ function MatchingGame({ gameData }) {
                     width: "100%",
                 }}
             >
-                <Button size="large" onClick={resetGame}>
-                    Chơi lại
-                </Button>
             </Space>
 
             {correctCount === totalQuestions && (

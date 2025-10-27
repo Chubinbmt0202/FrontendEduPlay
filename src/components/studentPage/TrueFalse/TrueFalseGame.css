@@ -1,0 +1,14 @@
+.titleName {
+    font-family: 'Lexend', sans-serif;
+    font: bolder !important;
+    color: #4d4d4d !important;
+    font-weight: bolder !important;
+    font-size: 40px !important;
+}
+
+.true-false-game-card {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    border: 1px solid #307a3f;
+    background-color: #F7F9EB;
+}

@@ -1,0 +1,23 @@
+.card-FillBlank {
+    font-family: 'Lexend', sans-serif;
+    font: bolder !important;
+    color: #4d4d4d !important;
+    font-weight: bolder !important;
+    background-color: #F7F9EB;
+    border: 1px solid #3B7239 !important;
+}
+
+.titleName {
+    font-family: 'Lexend', sans-serif !important;
+    font-weight: 700 !important;
+    color: rgb(77, 77, 77) !important;
+    font-size: 40px !important;
+}
+
+.text {
+    font-weight: 900 !important;
+    color: rgb(73, 134, 67) !important;
+    font-size: 20px !important;
+    font-family: 'Lexend', sans-serif !important;
+
+}

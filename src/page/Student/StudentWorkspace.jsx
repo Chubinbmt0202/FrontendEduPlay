@@ -12,17 +12,18 @@ import {
     AppstoreAddOutlined,
     ArrowLeftOutlined, // 👈 Thêm icon mũi tên
 } from '@ant-design/icons';
-import { useLessonData } from '../context/LessonDataContext';
+import { useLessonData } from '../../context/LessonDataContext';
+import './StudentWorkspace.css';
 // Dùng chung data
 // import { jsonData } from '../data';
 
 // Import các component game tương tác
-import MultipleChoiceGame from '../components/studentPage/MultipleChoiceGame/MultipleChoiceGame';
-import TrueFalseGame from '../components/studentPage/TrueFalse/TrueFalseGame';
-import FillInTheBlankGame from '../components/studentPage/FillBlank/FillBlank';
-import MatchingGame from '../components/studentPage/Matching/MatchingGame';
-import FlashCardsGame from '../components/studentPage/FlashCard/FlashCardsGame';
-import SortingGame from '../components/studentPage/Sorting/SortingGame';
+import MultipleChoiceGame from '../../components/studentPage/MultipleChoiceGame/MultipleChoiceGame';
+import TrueFalseGame from '../../components/studentPage/TrueFalse/TrueFalseGame';
+import FillInTheBlankGame from '../../components/studentPage/FillBlank/FillBlank';
+import MatchingGame from '../../components/studentPage/Matching/MatchingGame';
+import FlashCardsGame from '../../components/studentPage/FlashCard/FlashCardsGame';
+import SortingGame from '../../components/studentPage/Sorting/SortingGame';
 // (Bạn sẽ import các component game khác ở đây)
 
 const { Header, Content } = Layout;
@@ -124,22 +125,24 @@ function StudentWorkspace() {
     const tabItems = lessonData.generated_games.map((game, index) => ({
         key: index.toString(),
         label: (
-            <Space>
+            <Space className='buttonSidebar'>
                 {getGameTypeIcon(game.game_type)}
                 {getGameTypeName(game.game_type)}
             </Space>
         ),
         children: (
             // Thêm padding cho nội dung tab
-            <div style={{ padding: '16px' }}>
-                {renderInteractiveGame(game)}
-            </div>
+            <div className='contentTab' >
+                <div className='gameContainer'>
+                    {renderInteractiveGame(game)}
+                </div>
+            </div >
         ),
     }));
 
     return (
         <Layout className="student-workspace-layout">
-            <Content style={{ padding: '0 24px' }}>
+            <Content className='titleTop' style={{ padding: '0 24px' }}>
                 {/* 3. Container chứa Title và Back button */}
                 <div
                     style={{
@@ -151,16 +154,18 @@ function StudentWorkspace() {
                     }}
                 >
                     <Button
+                        className="back-button"
                         type="default"
                         icon={<ArrowLeftOutlined />}
                         onClick={showModal}
-                        size="large"
                     >
-                        Quay lại trang tạo bài
+                        Quay lại
                     </Button>
-                    <Title level={2} style={{ margin: 0 }}>
-                        {lessonData.lesson_title}
-                    </Title>
+                    <div className='titleLessonContainer'>
+                        <Title className='titleLesson' level={2} style={{ margin: 0 }}>
+                            {lessonData.lesson_title}
+                        </Title>
+                    </div>
 
                     <Modal
                         title="Bạn có chắc chắn muốn quay lại trang tạo bài không?"
@@ -176,18 +181,12 @@ function StudentWorkspace() {
                 </div>
 
                 <Tabs
+                    className='sidebar'
                     defaultActiveKey="0"
                     tabPosition="left"
                     items={tabItems}
-                    style={{
-                        background: '#fff', // Dùng màu trắng cho nội dung chính
-                        borderRadius: '8px',
-                        // Bỏ padding ở đây vì đã có container bọc ngoài Content
-                    }}
                     tabBarStyle={{
-                        padding: '12px',
-                        borderRight: '1px solid #f0f0f0', // Dùng border nhẹ hơn
-                        // boxShadow: '0 2px 8px rgba(0,0,0,0.05)', // Có thể giữ lại hoặc bỏ
+                        borderRadius: '8px',
                     }}
                 />
             </Content>
