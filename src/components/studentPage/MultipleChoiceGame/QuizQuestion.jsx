@@ -5,6 +5,7 @@ import { Radio, Typography, Space, Row, Col } from 'antd';
 import { CheckCircleFilled, CloseCircleFilled } from '@ant-design/icons';
 import CorectSound from '../../../assets/sound/correct.mp3';
 import InCorrectSound from '../../../assets/sound/incorrect.mp3';
+import './MultipleChoiceGame.css';
 
 // 1. THÊM LẠI: Import các style màu sắc từ file styles.js
 // import { selectedStyle, correctStyle, incorrectStyle, mutedStyle } from './styles';
@@ -24,9 +25,10 @@ const getButtonStyle = (
 ) => {
     const baseStyle = {
         width: '100%',
-        fontSize: 16,
+        height: '18vh',
+        fontSize: 25,
+        fontFamily: 'Lexend, sans-serif',
         minHeight: '70px',
-        height: 'auto',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -34,6 +36,7 @@ const getButtonStyle = (
         lineHeight: '1.4',
         borderRadius: '12px',
         transition: 'all 0.25s ease-in-out',
+        backgroundColor: '#F7F9EB',
         fontWeight: 500
     };
 
@@ -168,7 +171,7 @@ function QuizQuestion({
 
     return (
         <div style={{ width: '100%' }}>
-            <Title level={5} style={{ minHeight: 60, marginBottom: 24 }}>
+            <Title className='titleQuestion' level={5} style={{ minHeight: 60, marginBottom: 24 }}>
                 <Space>
                     {/* Hiển thị icon Đúng/Sai khi review */}
                     {isFinished && (
@@ -193,8 +196,6 @@ function QuizQuestion({
                         <Col span={12} key={i}>
                             <Radio.Button
                                 value={i}
-                                // 3. THÊM LẠI: Prop "style" bị mất
-                                // Dòng này áp dụng hàm logic style ở trên
                                 style={getButtonStyle(
                                     i,
                                     question,

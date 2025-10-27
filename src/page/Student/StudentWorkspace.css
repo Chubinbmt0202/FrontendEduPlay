@@ -1,0 +1,70 @@
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap');
+
+.student-workspace-layout {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    background-color: #4F994C;
+}
+
+.titleTop {
+    margin-top: 2rem;
+    margin-left: 1rem;
+}
+
+.back-button {
+    text-align: center;
+    font-size: medium;
+    font-weight: 800;
+    color: rgb(104, 103, 103);
+    padding: 20px;
+}
+
+.titleLessonContainer {
+    display: flex;
+    align-items: center;
+    margin-left: 8rem;
+}
+
+.titleLesson {
+    font-family: "Lexend", sans-serif;
+    color: rgb(255, 255, 255) !important;
+    margin-left: 1rem;
+    font-weight: 900;
+}
+
+.sidebar {
+    height: 50vh !important;
+    border-radius: 8px !important;
+}
+
+.buttonSidebar {
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+}
+
+.contentTab {
+    width: 90%;
+    margin: auto;
+    background-color: #F7F9EB;
+    border-radius: 10px;
+    box-shadow: 6px 7px 0 rgba(0, 0, 0, 0.5);
+}
+
+.gameContainer {
+    background-color: #F7F9EB;
+    padding: 0.5rem;
+    border-radius: 10px;
+}
+
+.titleQuestion {
+    font-family: "Lexend", sans-serif;
+    color: #4e4e4e !important;
+    font-weight: bolder !important;
+    font-size: 2.5rem !important;
+    font-style: normal !important;
+}

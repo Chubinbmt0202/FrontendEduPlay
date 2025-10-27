@@ -164,20 +164,10 @@ function MatchingGame({ gameData }) {
         }
     };
 
-    const resetGame = () => {
-        setAnswers({});
-        setSelectedA(null);
-        setDisabledPairs([]);
-        setFeedback({});
-        // Lưu ý: Việc reset này không xáo trộn lại, 
-        // người dùng sẽ chơi lại với đúng thứ tự đã xáo trộn trước đó.
-        // Đây thường là hành vi mong muốn.
-    };
-
     const correctCount = disabledPairs.length;
 
     return (
-        <Card>
+        <Card >
             <Progress
                 percent={progressPercent}
                 format={() => `${correctCount}/${totalQuestions}`}
@@ -190,7 +180,14 @@ function MatchingGame({ gameData }) {
                 style={{ marginBottom: 24 }}
             />
 
-            <Row gutter={24}>
+            <Row style={
+                {
+                    overflowY: 'auto',
+                    maxHeight: '350px'
+                }
+            }
+
+                gutter={24}>
                 {/* Cột A */}
                 <Col xs={12}>
                     <Title level={5} style={{ textAlign: "center" }}>
@@ -273,9 +270,6 @@ function MatchingGame({ gameData }) {
                     width: "100%",
                 }}
             >
-                <Button size="large" onClick={resetGame}>
-                    Chơi lại
-                </Button>
             </Space>
 
             {correctCount === totalQuestions && (

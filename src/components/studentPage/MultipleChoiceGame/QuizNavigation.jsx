@@ -28,6 +28,10 @@ function QuizNavigation({
             {/* Chỉ hiển thị khi CHƯA nộp bài */}
             {!isFinished && (
                 <Button
+                    style={{
+                        color: '#fff',
+                        backgroundColor: '#4F994C'
+                    }}
                     type="primary"
                     size="large"
                     icon={isChecked && !isLastQuestion ? <RightOutlined /> : null}
@@ -44,6 +48,7 @@ function QuizNavigation({
             {/* Nút "Câu tiếp" ở chế độ REVIEW (sau khi đã nộp) */}
             {isFinished && (
                 <Button
+
                     type="primary"
                     icon={<RightOutlined />}
                     onClick={onNext}

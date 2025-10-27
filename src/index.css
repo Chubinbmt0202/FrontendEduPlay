@@ -161,25 +161,28 @@
 
 /* Xóa đường gạch đứng của Tabs bên trái */
 .ant-tabs-left>.ant-tabs-nav::before {
-  display: none !important;
+  display: hidden !important;
 }
 
 /* Option: làm tab trông mềm mại hơn */
 .ant-tabs-nav {
+  position: fixed;
+  background-color: #ffffff;
   border: none !important;
-  background-color: #fff;
 }
 
 /* Làm các tab item đẹp hơn */
 .ant-tabs-tab {
-  /* border-radius: 8px !important; */
+  margin: 0 !important;
+  padding: 1rem 1rem !important;
   /* margin-bottom: 8px !important; */
   transition: all 0.3s ease;
 }
 
 /* Hiệu ứng khi hover tab */
 .ant-tabs-tab:hover {
-  background-color: #f5f5f5 !important;
+  background-color: #aaaaaa !important;
+  color: white !important;
 }
 
 /* Tab đang active */

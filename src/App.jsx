@@ -7,7 +7,7 @@ import './App.css';
 
 // Import các trang của bạn
 import TeacherDashboard from './page/Teacher/TeacherDashboard';
-import StudentWorkspace from './page/StudentWorkspace';
+import StudentWorkspace from './page/Student/StudentWorkspace';
 
 const { Header } = Layout;
 
